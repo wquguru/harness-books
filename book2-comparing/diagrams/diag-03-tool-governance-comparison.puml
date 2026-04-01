@@ -1,7 +1,7 @@
 @startuml
 title Claude Code vs Codex: 工具治理与执行边界
 
-skinparam backgroundColor #F7F1E6
+skinparam backgroundColor transparent
 skinparam dpi 135
 skinparam linetype ortho
 skinparam packageStyle rectangle

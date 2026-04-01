@@ -1,7 +1,7 @@
 @startuml
 title Claude Code vs Codex: 连续性与状态承接
 
-skinparam backgroundColor #F7F1E6
+skinparam backgroundColor transparent
 skinparam dpi 135
 skinparam linetype ortho
 skinparam packageStyle rectangle

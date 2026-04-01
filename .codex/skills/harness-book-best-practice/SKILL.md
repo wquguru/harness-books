@@ -105,6 +105,32 @@ Known repo-specific pitfalls:
 - Do NOT combine `\setstretch{1.0}` with `\setlength{\parskip}{0pt}` in the TOC `\pretocmd` group. This specific pair triggers a TeX page-break bug where TOC entries near the first page break silently disappear. `\setstretch{1.08}` or higher does not trigger it — the issue is specific to exactly `1.0` which creates zero-tolerance vertical spacing. The safe approach is to omit `\setstretch` entirely in the TOC group and only use `\parskip=0pt`.
 - The currently stable shared fix is narrower: keep TOC macro overrides in `\AtBeginDocument`, and keep the `\tableofcontents` pre-hook minimal. In practice, `\let\thispagestyle\@gobble\pagestyle{empty}` has been more stable than adding extra TOC line-spacing tweaks.
 - Do not treat `\setstretch{1.08}` as a universal TOC fix. It fixed one page break in `book2-comparing`, but regressed later chapter breaks in both books by causing subsequent chapter titles to disappear even though the entries were present in `.toc`.
+- The current robust fix is to guard chapter TOC entries with a page-remaining-space check before rendering the chapter line. In `tools/book-kit/export_book_pdf.py`, `\tocchapterneedspace` measures `\pagegoal - \pagetotal` and forces a page break when the remaining height is too small. This prevents chapter headings from landing at the bottom of a TOC page and avoids losing the following section entries around the break.
+- Apply the same page-remaining-space protection to TOC section entries when single section rows disappear near a break. In this repo, section-level protection was needed because `book1` could still lose `3.4` even after chapter-level protection was added.
+
+## TOC Failure Modes
+
+- A TOC entry can exist in `.toc` but still disappear from the rendered PDF near a page break. Treat this as a LaTeX pagination problem, not a Pandoc generation problem.
+- Fixing one break point is not enough. A change that restores `第 4 章` in one book can still regress `第 5 章` or a mid-chapter section block in the other book.
+- Long titles and titles with extra punctuation are more fragile near page boundaries. If a single heading keeps disappearing after structural fixes, a small title shortening is acceptable.
+
+## TOC Validation Protocol
+
+- Always validate TOC fixes against both books, not only the book that first exposed the issue.
+- Use `pdftotext -f 3 -l 6 -layout ...` or an equivalent page-scoped extraction to inspect only the TOC pages. Whole-document text extraction can hide TOC regressions because the same heading still exists later in body text.
+- A TOC fix is not complete unless these breakpoints are all checked:
+- `book1-claude-code`: `第 3 章` section block around `3.3` to `3.7`
+- `book1-claude-code`: `第 4 章` to `第 5 章`
+- `book2-comparing`: `第 3 章` to `第 4 章`
+- `book2-comparing`: `第 4 章` to `第 5 章`
+- If any one breakpoint regresses, keep iterating. Do not record the attempt as a stable solution.
+
+## Preferred Fix Order
+
+- First inspect the generated `.toc` file. If the missing headings are present there, debug LaTeX pagination and TOC macros rather than markdown generation.
+- Prefer shared fixes in `tools/book-kit/export_book_pdf.py` over per-book hacks.
+- Prefer page-break control around TOC entries over line-spacing or font-size tweaks.
+- Only after the shared TOC logic is stable should you shorten an individual heading, and only when one specific title remains an outlier.
 
 When debugging TOC issues:
 

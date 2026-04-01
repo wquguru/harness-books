@@ -17,7 +17,7 @@
 
 建议阅读顺序：
 
-1. [前言](preface.md)
+1. [序言](preface.md)
 2. [第 1 章 为什么要把 Claude Code 和 Codex 放在一起看](chapter-01-why-this-comparison.md)
 3. [第 2 章 两种控制面：Prompt 拼装与 Instruction Fragment](chapter-02-two-control-planes.md)
 4. [第 3 章 心跳放在哪：Query Loop 对照 Thread、Rollout 与 State](chapter-03-loop-thread-and-rollout.md)

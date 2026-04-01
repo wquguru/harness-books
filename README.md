@@ -10,18 +10,20 @@
         <img src="./book1-claude-code/assets/cover-wxb.svg" alt="Harness Engineering：Claude Code 设计指南" width="280">
       </a>
       <br>
-      <strong>Book 1</strong>
+      <strong>Harness Engineering：Claude Code 设计指南</strong>
       <br>
-      <a href="https://harness-books.agentway.dev/book1-claude-code/">Harness Engineering：Claude Code 设计指南</a>
+      <a href="https://harness-books.agentway.dev/book1-claude-code/">在线阅读</a>
+      <a href="https://harness-books.agentway.dev/book1-claude-code/exported/book1-claude-code.pdf">PDF下载</a>
     </td>
     <td align="center" valign="top" width="50%">
       <a href="https://harness-books.agentway.dev/book2-comparing/">
         <img src="./book2-comparing/assets/cover-wxb.svg" alt="Claude Code 和 Codex 的 Harness 设计哲学" width="280">
       </a>
       <br>
-      <strong>Book 2</strong>
+      <strong>Claude Code 和 Codex 的 Harness 设计哲学</strong>
       <br>
-      <a href="https://harness-books.agentway.dev/book2-comparing/">Claude Code 和 Codex 的 Harness 设计哲学</a>
+      <a href="https://harness-books.agentway.dev/book2-comparing/">在线阅读</a>
+      <a href="https://harness-books.agentway.dev/book2-comparing/exported/book2-comparing.pdf">PDF下载</a>
     </td>
   </tr>
 </table>
@@ -112,7 +114,7 @@ English index terms: `Harness Engineering`, `Claude Code guide`, `Claude Code vs
 
 - [封面与导读](./book2-comparing/index.md)
 - [阅读地图：如何理解第一本书与这本比较书](./book2-comparing/chapter-00-reading-map.md)
-- [前言 两套 Harness，不必假装是同一匹马的附件](./book2-comparing/preface.md)
+- [序言 两套 Harness，不必假装是同一匹马的附件](./book2-comparing/preface.md)
 - [第 1 章 为什么要把 Claude Code 和 Codex 放在一起看](./book2-comparing/chapter-01-why-this-comparison.md)
 - [第 2 章 两种控制面：Prompt 拼装与 Instruction Fragment](./book2-comparing/chapter-02-two-control-planes.md)
 - [第 3 章 心跳放在哪：Query Loop 对照 Thread、Rollout 与 State](./book2-comparing/chapter-03-loop-thread-and-rollout.md)
