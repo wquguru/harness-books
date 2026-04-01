@@ -28,6 +28,17 @@ Shared build logic lives in:
 
 Prefer changing shared behavior in `tools/book-kit/` rather than reintroducing per-book one-off scripts.
 
+## Release Metadata
+
+Treat book release metadata as structured config, not manuscript text.
+
+- Store the stable public-facing field `release_date` in `book.meta.json`.
+- Prefer deriving `revision` automatically from git in shared tooling instead of maintaining a manual version string.
+- Render release metadata through shared export templates, not by manually inserting it into `README.md`, chapter files, or cover artwork.
+- Preferred placement is the title page / colophon area for PDF and the cover section for print HTML.
+- Do not default to volatile build timestamps in final deliverables. Prefer a stable release date so regenerated exports remain reproducible.
+- Use `--draft` for internal draft exports when you explicitly want today's date plus git revision in the rendered output.
+
 ## Directory Rules
 
 - `assets/` is for source assets only: cover SVG/PDF, hand-maintained source files, reusable static inputs.
@@ -48,6 +59,7 @@ Keep final exports per book under `exported/` with stable names:
 - `book2-comparing/exported/book2-comparing-print.html`
 
 If a new output is added, put it in `book.meta.json` under `outputs`.
+Do not encode the primary release version only in the output filename. The canonical source of version truth should remain `book.meta.json`.
 
 ## Build Policy
 
@@ -89,7 +101,10 @@ Known repo-specific pitfalls:
 - Do not reintroduce Pandoc's default `parskip` path for PDF export in this repo.
 - In this repo's `ctexbook` setup, `parskip` patched `\@starttoc` and caused TOC entries to disappear around page breaks.
 - Keep paragraph spacing local in the LaTeX header instead.
+- If TOC overrides are implemented via `\renewcommand{\l@chapter}` / `\renewcommand{\l@section}`, place them inside `\AtBeginDocument`. In this repo, `ctexbook` applies delayed hooks that can silently override preamble-time TOC customizations.
 - Do NOT combine `\setstretch{1.0}` with `\setlength{\parskip}{0pt}` in the TOC `\pretocmd` group. This specific pair triggers a TeX page-break bug where TOC entries near the first page break silently disappear. `\setstretch{1.08}` or higher does not trigger it — the issue is specific to exactly `1.0` which creates zero-tolerance vertical spacing. The safe approach is to omit `\setstretch` entirely in the TOC group and only use `\parskip=0pt`.
+- The currently stable shared fix is narrower: keep TOC macro overrides in `\AtBeginDocument`, and keep the `\tableofcontents` pre-hook minimal. In practice, `\let\thispagestyle\@gobble\pagestyle{empty}` has been more stable than adding extra TOC line-spacing tweaks.
+- Do not treat `\setstretch{1.08}` as a universal TOC fix. It fixed one page break in `book2-comparing`, but regressed later chapter breaks in both books by causing subsequent chapter titles to disappear even though the entries were present in `.toc`.
 
 When debugging TOC issues:
 
@@ -108,10 +123,17 @@ If TOC entries disappear near page breaks, inspect `tools/book-kit/export_book_p
 - Keep build, export, GitBook/Honkit, GitHub Pages, PDF pipeline, and local publishing instructions out of book-facing markdown. Put those details in repo docs or this skill instead.
 - Avoid editorial-process language inside the books, such as "后续扩写", "继续修图", "换版式", "导出印刷稿", naming-convention notes for source assets, or other maintenance instructions for the manuscript itself.
 
+## Editorial References
+
+- Writing proposals, outlines, positioning notes, and other non-reader-facing editorial documents should live under `references/` in this skill, not inside `book1-claude-code/` or `book2-comparing/`.
+- Use `references/` for background material that helps future editing decisions but should not be treated as buildable manuscript content.
+- Current reference material includes `references/harness-engineering-book-proposal.md`.
+
 ## Editing Strategy
 
 - Prefer updating shared code in `tools/book-kit/` for behavior changes.
 - Prefer updating `book.meta.json` for per-book output naming.
+- Prefer updating `book.meta.json` for per-book release metadata such as `release_date`.
 - Keep `SUMMARY.md` aligned with the actual reading structure when the book uses Honkit navigation.
 - Avoid adding extra build scripts under individual books unless there is a clear book-specific requirement that cannot live in shared tooling.
 
@@ -121,6 +143,7 @@ After substantial book or pipeline changes, run enough of this checklist to cove
 
 - Export the affected book PDF
 - If HTML-print behavior changed, regenerate the `*-print.html`
+- If release metadata changed, confirm the version/date block appears in both print HTML and the exported PDF title page
 - Confirm files land in `exported/`
 - Check TOC pages visually if headings, spacing, or chapter titles changed
 - Confirm no local `.md` links leak into the merged PDF text

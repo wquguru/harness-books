@@ -4,6 +4,7 @@
   "author": "OpenAI Codex",
   "language": "zh-Hans",
   "readme_path": "index.md",
+  "release_date": "2026-04-01",
   "cover_image": "assets/cover-wxb.svg",
   "cover_alt": "封面：Claude Code 和 Codex 的 Harness 设计哲学",
   "outputs": {

@@ -39,6 +39,17 @@ python3 tools/book-kit/export_pdf.py book2-comparing
 
 Use `--clean` or `--clean-generated` when rebuild hygiene matters. Prefer shared scripts in `tools/book-kit/` over adding one-off per-book build logic.
 
+## Book Metadata
+
+Treat release metadata as first-class book configuration in each `book.meta.json`.
+
+- Put the stable public field `release_date` in `book.meta.json`
+- Let shared tooling derive `revision` from git automatically unless a manual `revision` override is truly needed
+- Render release metadata through shared templates in `tools/book-kit/`, not by hardcoding values in Markdown chapters
+- Prefer showing release metadata on the PDF/print title page or colophon area, not in running headers or chapter titles
+- Prefer a stable release date over an auto-generated build timestamp so formal exports stay reproducible and diffs stay clean
+- Use `--draft` only for internal draft exports that should show the current date plus git revision automatically
+
 ## Coding Style & Naming Conventions
 
 Write Markdown with short sections, stable heading hierarchy, and descriptive filenames such as `chapter-06-errors-and-recovery.md`. Keep `SUMMARY.md` aligned with the actual reading order. Diagram sources should stay paired as `diagrams/name.puml` and `diagrams/name.png`.
@@ -54,6 +65,7 @@ There is no automated test suite in this repo today. Validation is build-based:
 - visually inspect TOC, pagination, links, and updated diagrams
 
 When changing shared export code, validate at least one full PDF export end to end.
+When changing release metadata rendering, also confirm the generated `*-print.html` and inspect the title page in the exported PDF.
 
 ## Commit & Pull Request Guidelines
 

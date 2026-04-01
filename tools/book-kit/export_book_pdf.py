@@ -7,7 +7,7 @@ import sys
 import shutil
 from pathlib import Path
 
-from book_meta import load_meta, resolve_book_dir
+from book_meta import escape_latex, load_meta, release_display_items, resolve_book_dir
 from build_pandoc_book import build_book
 
 
@@ -33,6 +33,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         "--clean-generated",
         action="store_true",
         help="Also regenerate PNG diagrams from .puml sources before exporting.",
+    )
+    parser.add_argument(
+        "--draft",
+        action="store_true",
+        help="Render draft release metadata using today's date and the current git revision.",
     )
     return parser.parse_args(argv)
 
@@ -70,7 +75,7 @@ def regenerate_diagrams(book_dir: Path) -> None:
         raise SystemExit("Missing required command for --clean-generated: plantuml") from exc
 
 
-def render_title_page(meta: dict, cover_pdf_rel: str | None) -> str:
+def render_title_page(meta: dict, cover_pdf_rel: str | None, release_items: list[str]) -> str:
     pages: list[str] = []
 
     if cover_pdf_rel:
@@ -89,22 +94,34 @@ def render_title_page(meta: dict, cover_pdf_rel: str | None) -> str:
         )
 
     title_page_lines = meta.get("title_page_lines", [])
-    if title_page_lines:
+    if title_page_lines or release_items:
         body = [r"\begin{titlepage}", r"\thispagestyle{empty}", r"\newgeometry{top=0mm,bottom=0mm,left=0mm,right=0mm}"]
-        first = True
-        for line in title_page_lines:
-            if first:
-                body.append(r"\vspace*{0.62\textheight}")
-                body.append(r"\begin{center}")
-                body.append(rf"{{\fontsize{{18pt}}{{30pt}}\selectfont\itshape {line}\par}}")
-                first = False
-            else:
-                body.append(r"\vspace{8mm}")
-                body.append(rf"{{\fontsize{{16pt}}{{24pt}}\selectfont\color[HTML]{{7B1E1E}} {line}\par}}")
+        if title_page_lines:
+            first = True
+            for line in title_page_lines:
+                line = escape_latex(str(line).strip())
+                if first:
+                    body.append(r"\vspace*{0.62\textheight}")
+                    body.append(r"\begin{center}")
+                    body.append(rf"{{\fontsize{{18pt}}{{30pt}}\selectfont\itshape {line}\par}}")
+                    first = False
+                else:
+                    body.append(r"\vspace{8mm}")
+                    body.append(rf"{{\fontsize{{16pt}}{{24pt}}\selectfont\color[HTML]{{7B1E1E}} {line}\par}}")
+            body.append(r"\end{center}")
+        if release_items:
+            escaped_items = [escape_latex(item) for item in release_items]
+            release_line = r" \textbullet{} ".join(escaped_items)
+            body.extend(
+                [
+                    r"\vspace*{\fill}",
+                    r"\begin{center}",
+                    rf"{{\fontsize{{10.5pt}}{{15pt}}\selectfont\color[HTML]{{666666}} {release_line}\par}}",
+                    r"\end{center}",
+                ]
+            )
         body.extend(
             [
-                r"\end{center}",
-                r"\vspace*{\fill}",
                 r"\restoregeometry",
                 r"\end{titlepage}",
                 r"\clearpage",
@@ -132,29 +149,34 @@ def render_header() -> str:
             r"% This reduces collisions between long titles, dot leaders and page numbers.",
             r"\renewcommand{\@pnumwidth}{2.8em}",
             r"\renewcommand{\@tocrmarg}{3.8em}",
-            r"\renewcommand*\l@chapter[2]{%",
-            r"  \ifnum \c@tocdepth >\m@ne",
-            r"    \addpenalty{-\@highpenalty}%",
-            r"    \addvspace{8pt}%",
-            r"    \begingroup",
-            r"      \parindent \z@ \rightskip \@pnumwidth",
-            r"      \parfillskip -\@pnumwidth",
-            r"      \leavevmode \normalsize\bfseries #1\nobreak\hfill \nobreak\hb@xt@\@pnumwidth{\hss #2}\par",
-            r"      \penalty\@highpenalty",
-            r"    \endgroup",
-            r"  \fi}",
-            r"\renewcommand*\l@section[2]{%",
-            r"  \ifnum \c@tocdepth >\z@",
-            r"    \addpenalty\@secpenalty",
-            r"    \addvspace{1pt}%",
-            r"    \@dottedtocline{1}{1.5em}{3.2em}{\normalsize #1}{\normalsize #2}%",
-            r"  \fi}",
+            r"% Use \AtBeginDocument so our TOC overrides win over ctexbook's",
+            r"% own delayed hooks. Without this, long-title pagination fixes can",
+            r"% be silently lost after class initialization.",
+            r"\AtBeginDocument{%",
+            r"  \renewcommand*\l@chapter[2]{%",
+            r"    \ifnum \c@tocdepth >\m@ne",
+            r"      \addpenalty{-\@highpenalty}%",
+            r"      \addvspace{8pt}%",
+            r"      \begingroup",
+            r"        \parindent \z@ \rightskip \@pnumwidth",
+            r"        \parfillskip -\@pnumwidth",
+            r"        \leavevmode \normalsize\bfseries #1\nobreak\hfill \nobreak\hb@xt@\@pnumwidth{\hss #2}\par",
+            r"        \penalty\@highpenalty",
+            r"      \endgroup",
+            r"    \fi}%",
+            r"  \renewcommand*\l@section[2]{%",
+            r"    \ifnum \c@tocdepth >\z@",
+            r"      \addpenalty\@secpenalty",
+            r"      \addvspace{1pt}%",
+            r"      \@dottedtocline{1}{1.5em}{3.2em}{\normalsize #1}{\normalsize #2}%",
+            r"    \fi}%",
+            r"}",
             r"% Isolate TOC from global \parskip (6pt) which inflates entry spacing",
             r"% and causes page-break miscalculation in ctexbook.",
-            r"% IMPORTANT: Do NOT add \setstretch{1.0} here — the combination of",
-            r"% setspace's \setstretch{1.0} with \parskip=0pt triggers a bug where",
-            r"% TOC entries near the first page break silently disappear.",
-            r"\pretocmd{\tableofcontents}{\clearpage\begingroup\raggedbottom\setlength{\parskip}{0pt}\pagestyle{plain}}{}{}",
+            r"% Keep the TOC pre-hook minimal. The most stable variant in repo",
+            r"% debugging keeps page-style handling simple and avoids extra",
+            r"% spacing changes that regress different chapter breakpoints.",
+            r"\pretocmd{\tableofcontents}{\clearpage\begingroup\let\thispagestyle\@gobble\pagestyle{empty}}{}{}",
             r"\apptocmd{\tableofcontents}{\clearpage\endgroup}{}{}",
             r"\makeatother",
             "",
@@ -183,6 +205,7 @@ def main() -> None:
     args = parse_args(sys.argv[1:])
     book_dir = resolve_book_dir(args.book_dir)
     meta = load_meta(book_dir)
+    release_items = release_display_items(book_dir, meta, draft=args.draft)
 
     if args.clean or args.clean_generated:
         clean_book_outputs(book_dir, meta)
@@ -201,7 +224,7 @@ def main() -> None:
     book_md.write_text(build_book(book_dir, meta), encoding="utf-8")
 
     cover_pdf_rel = ensure_cover_pdf(book_dir, meta, book_output_dir)
-    titlepage_tex.write_text(render_title_page(meta, cover_pdf_rel), encoding="utf-8")
+    titlepage_tex.write_text(render_title_page(meta, cover_pdf_rel, release_items), encoding="utf-8")
     header_tex.write_text(render_header(), encoding="utf-8")
 
     mainfont_default, cjk_mainfont_default, monofont_default = default_fonts()

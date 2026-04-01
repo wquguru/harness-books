@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import argparse
 import html
 import json
 import re
 import sys
 from pathlib import Path
 
-from book_meta import chapter_paths, load_meta, resolve_book_dir
+from book_meta import chapter_paths, load_meta, release_display_items, resolve_book_dir
 
 
 SECTION_RE = re.compile(
@@ -14,6 +15,17 @@ SECTION_RE = re.compile(
     re.DOTALL,
 )
 PAGE_RE = re.compile(r"gitbook\.page\.hasChanged\((\{.*?\})\);", re.DOTALL)
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build print HTML for a book.")
+    parser.add_argument("book_dir", nargs="?", help="Book directory path")
+    parser.add_argument(
+        "--draft",
+        action="store_true",
+        help="Render draft release metadata using today's date and the current git revision.",
+    )
+    return parser.parse_args(argv)
 
 
 def load_page(book_dir: Path, md_path: str) -> tuple[str, str]:
@@ -35,18 +47,28 @@ def load_page(book_dir: Path, md_path: str) -> tuple[str, str]:
     return title, section_match.group(1).strip()
 
 
-def build_html(book_dir: Path, meta: dict) -> str:
+def build_html(book_dir: Path, meta: dict, *, draft: bool = False) -> str:
     articles: list[str] = []
+    release_bits = release_display_items(book_dir, meta, draft=draft)
+
     for index, md_path in enumerate(chapter_paths(book_dir)):
         title, body = load_page(book_dir, md_path)
         chapter_class = "book-cover" if index == 0 else "book-chapter"
         heading = "" if index == 0 else f"<header><h1>{html.escape(title)}</h1></header>"
+        edition = ""
+        if index == 0 and release_bits:
+            edition = (
+                '<div class="book-edition">'
+                f"{html.escape(' · '.join(release_bits))}"
+                "</div>"
+            )
         articles.append(
             "\n".join(
                 [
                     f'<article class="{chapter_class}" data-source="{html.escape(md_path)}">',
                     heading,
                     body,
+                    edition,
                     "</article>",
                 ]
             )
@@ -105,6 +127,15 @@ def build_html(book_dir: Path, meta: dict) -> str:
       display: flex;
       flex-direction: column;
       justify-content: center;
+    }}
+
+    .book-edition {{
+      margin-top: auto;
+      padding-top: 14mm;
+      text-align: center;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
     }}
 
     .book-chapter > header {{
@@ -170,7 +201,8 @@ def build_html(book_dir: Path, meta: dict) -> str:
 
 
 def main() -> None:
-    book_dir = resolve_book_dir(sys.argv[1] if len(sys.argv) > 1 else None)
+    args = parse_args(sys.argv[1:])
+    book_dir = resolve_book_dir(args.book_dir)
     meta = load_meta(book_dir)
     book_output_dir = book_dir / "_book"
     if not book_output_dir.exists():
@@ -178,7 +210,7 @@ def main() -> None:
 
     output = book_dir / meta["outputs"]["print_html"]
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(build_html(book_dir, meta), encoding="utf-8")
+    output.write_text(build_html(book_dir, meta, draft=args.draft), encoding="utf-8")
     print(output)
 
 

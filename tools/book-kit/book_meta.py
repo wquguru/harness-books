@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 import re
+import subprocess
 from pathlib import Path
 
 
@@ -24,6 +26,38 @@ def load_meta(book_dir: Path) -> dict:
     if not meta_path.exists():
         raise SystemExit(f"Missing book metadata: {meta_path}")
     return json.loads(meta_path.read_text(encoding="utf-8"))
+
+
+def git_revision(book_dir: Path) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short=6", "HEAD"],
+            cwd=book_dir,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    revision = result.stdout.strip()
+    return revision or None
+
+
+def release_display_items(book_dir: Path, meta: dict, *, draft: bool = False) -> list[str]:
+    items: list[str] = []
+    if draft:
+        items.append("Draft")
+        items.append(dt.date.today().isoformat())
+    else:
+        release_date = str(meta.get("release_date", "")).strip()
+        if release_date:
+            items.append(release_date)
+
+    revision = str(meta.get("revision", "")).strip() or git_revision(book_dir) or ""
+    if revision:
+        items.append(f"rev {revision}")
+
+    return items
 
 
 def chapter_paths(book_dir: Path) -> list[str]:
