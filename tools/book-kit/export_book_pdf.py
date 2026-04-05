@@ -324,7 +324,7 @@ def main() -> None:
         f"mainfont={mainfont}",
         "-V",
         f"monofont={monofont}",
-        "--syntax-highlighting=tango",
+        "--highlight-style=tango",
         "-o",
         str(output),
     ]
