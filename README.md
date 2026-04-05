@@ -1,116 +1,118 @@
-# Harness Books / 驾驭工程
+# Harness Books
 
-[![Read Online](https://img.shields.io/badge/Read%20Online-Harness%20Books-16a34a?style=flat-square&logo=googlechrome&logoColor=white)](https://harness-books.agentway.dev)
+[中文 README](./README.zh-CN.md)
+
+[![Read Online](https://img.shields.io/badge/Read%20Online-Harness%20Books-16a34a?style=flat-square&logo=googlechrome&logoColor=white)](https://harness-books.agentway.dev/en/)
 [![About AgentWay](https://img.shields.io/badge/About-AgentWay-22c55e?style=flat-square&logo=bookstack&logoColor=white)](https://agentway.dev)
 
-两本关于 Harness Engineering 的书。它们追问同一个工程问题：一个会写代码的模型进了终端、仓库、权限系统和团队流程，系统凭什么还能保持边界、连续性和后果控制。
+Two books on harness engineering. They pursue the same engineering question: once a code-writing model is placed inside terminals, repositories, permission systems, and team workflows, what keeps the overall system bounded, continuous, and accountable for consequences?
 
 <table>
   <tr>
     <td align="center" valign="top" width="50%">
-      <a href="https://harness-books.agentway.dev/book1-claude-code/">
-        <img src="./book1-claude-code/assets/cover-wxb.svg" alt="Harness Engineering：Claude Code 设计指南" width="280">
+      <a href="https://harness-books.agentway.dev/en/book1-claude-code/">
+        <img src="./book1-claude-code/assets/cover-wxb-en.svg" alt="Harness Engineering: A Design Guide to Claude Code" width="280">
       </a>
       <br>
-      <strong>Harness Engineering：Claude Code 设计指南</strong>
+      <strong>Harness Engineering: A Design Guide to Claude Code</strong>
       <br>
-      <a href="https://harness-books.agentway.dev/book1-claude-code/">在线阅读</a> ·
-      <a href="https://harness-books.agentway.dev/book1-claude-code/exported/book1-claude-code.pdf">PDF 下载</a>
+      <a href="https://harness-books.agentway.dev/en/book1-claude-code/">Read online</a> ·
+      <a href="https://harness-books.agentway.dev/en/book1-claude-code/exported/book1-claude-code-en.pdf">Download PDF</a>
     </td>
     <td align="center" valign="top" width="50%">
-      <a href="https://harness-books.agentway.dev/book2-comparing/">
-        <img src="./book2-comparing/assets/cover-wxb.svg" alt="Claude Code 和 Codex 的 Harness 设计哲学" width="280">
+      <a href="https://harness-books.agentway.dev/en/book2-comparing/">
+        <img src="./book2-comparing/assets/cover-wxb-en.svg" alt="The Harness Design Philosophies of Claude Code and Codex" width="280">
       </a>
       <br>
-      <strong>Claude Code 和 Codex 的 Harness 设计哲学</strong>
+      <strong>The Harness Design Philosophies of Claude Code and Codex</strong>
       <br>
-      <a href="https://harness-books.agentway.dev/book2-comparing/">在线阅读</a> ·
-      <a href="https://harness-books.agentway.dev/book2-comparing/exported/book2-comparing.pdf">PDF 下载</a>
+      <a href="https://harness-books.agentway.dev/en/book2-comparing/">Read online</a> ·
+      <a href="https://harness-books.agentway.dev/en/book2-comparing/exported/book2-comparing-en.pdf">Download PDF</a>
     </td>
   </tr>
 </table>
 
-这两本书不打算把源码拆成零件逐条讲解。它们关心的是 harness 怎样组织约束与执行，怎样把一个本质上不稳定的模型，收束进可持续运行的工程秩序里。Prompt 分层、Query Loop、权限判定、上下文治理、失败恢复、多 agent 验证、本地规则和团队制度，合在一起才构成 harness 的器官系统。工程里最怕的事，不是模型偶尔犯傻，而是系统对后果毫无准备。
+These books are not meant to walk line by line through the source code. They focus on how a harness organizes constraints and execution, and how an inherently unstable model can be folded into a sustainable engineering order. Prompt layering, query loops, permission decisions, context governance, failure recovery, multi-agent verification, local rules, and team institutions together form the organ system of a harness. The real danger is not that a model occasionally says something wrong, but that the system has no structure for handling consequences.
 
-## 核心判断
+## Core Claims
 
-- Harness Engineering 讨论的是约束结构怎样组织执行。
-- 一个会写代码的模型进入真实工程环境以后，主要问题不再是回答质量，而是行为后果。
-- Prompt、工具、权限、状态、恢复、验证和制度，不是外围配件，而是同一套控制结构的不同器官。
-- 比较不同 agent 系统，重点不该是功能表，而该是秩序被安放在哪一层。
-- 一个团队如果不能把个人经验沉淀成可复用制度，就很难把 agent 变成稳定系统。
+- Harness engineering is about how constraint structures organize execution.
+- Once a code-writing model enters a real engineering environment, the main problem is no longer answer quality but behavioral consequences.
+- Prompts, tools, permissions, state, recovery, verification, and institutions are not accessories around the system. They are organs in the same control structure.
+- When comparing agent systems, the key question is not the feature checklist but where order is actually placed.
+- If a team cannot turn individual experience into reusable rules, it will struggle to turn an agent into a stable system.
 
-## 两本书，各自关注的核心问题
+## What The Two Books Focus On
 
-### 第一本：Claude Code 设计指南
+### Book 1: A Design Guide to Claude Code
 
-第一本书拿 Claude Code 当观察对象，重点放在运行时骨架上。它关心的是，一套系统为什么最终必须长出控制面、Query Loop、工具权限、上下文治理、恢复路径、多 agent 验证和团队制度这些结构。
+The first book uses Claude Code as the observation target and concentrates on runtime structure. Its concern is why a system eventually has to grow components such as a control plane, query loop, tool permissions, context governance, recovery paths, multi-agent verification, and team rules.
 
-如果你更关心这些问题，建议先读第一本：
+Start with Book 1 if these are the questions you care about:
 
-- 为什么 Harness Engineering 不是 Prompt Engineering 的放大版
-- Prompt 为什么本质上是控制面，而不是聊天输入框
-- 模型犯错为什么应该被视为运行时常态，而不是异常事件
-- 多 Agent 和验证机制为什么不能混成一团
-- 团队怎么把个人经验固化成可复用的工程制度
+- Why harness engineering is not just prompt engineering at a larger scale
+- Why prompts are fundamentally part of the control plane rather than a chat box
+- Why model mistakes should be treated as a runtime norm rather than an exceptional event
+- Why multi-agent work and verification should not be blended into one vague mechanism
+- How a team can solidify personal experience into reusable engineering institutions
 
-### 第二本：Claude Code 与 Codex 比较书
+### Book 2: Comparing Claude Code and Codex
 
-第二本书把 Claude Code 和 Codex 放在一起，关注的是两套 harness 各自把秩序安放在哪一层。有人更从运行时纪律出发，有人更从结构化控制层出发；系统都能运转，权力分配方式却并不一样。
+The second book places Claude Code and Codex side by side and asks where each harness places order. One path starts from runtime discipline; the other starts from a more structured control layer. Both systems can work, but they distribute authority differently.
 
-如果你更关心选型、架构判断或自己做系统时该学谁，建议读第二本：
+Start with Book 2 if you care more about system choice, architectural judgment, or what to learn when building your own harness:
 
-- Claude Code 和 Codex 在控制面设计上最大的分歧是什么
-- Query Loop、Thread、Rollout、State 的职责边界怎么对齐来看
-- 权限、沙箱、策略语言各自承担什么治理角色
-- 技能、Hook、本地规则怎样把“组织习惯”写进系统
-- 如果要自己做 harness，应该先学谁、先学哪一层
+- What the biggest control-plane divergence is between Claude Code and Codex
+- How to align the roles of query loops, threads, rollouts, and state
+- What governance roles are played by permissions, sandboxes, and policy languages
+- How skills, hooks, and local rules encode organizational habits into the system
+- If you want to build your own harness, who to learn from first and which layer to study first
 
-## 建议阅读路径
+## Suggested Reading Paths
 
-- 想先建立完整框架 → 先读第一本，再读第二本。
-- 已经熟悉 agent coding 工具，想直接看架构分歧 → 先读第二本。
-- 只关心结论 → 第一本“第 9 章 十条原则” + 第二本“第 7 章 殊途同归，还是各表一枝”。
+- Want the full frame first: read Book 1, then Book 2.
+- Already familiar with coding-agent tools and want the architectural split directly: start with Book 2.
+- Only want the conclusions: read Book 1 Chapter 9 plus Book 2 Chapter 7.
 
 <details>
-<summary><strong>完整目录</strong></summary>
+<summary><strong>Full Table of Contents</strong></summary>
 
-### Book 1 — Harness Engineering：Claude Code 设计指南
+### Book 1 — Harness Engineering: A Design Guide to Claude Code
 
-- [导读](./book1-claude-code/index.md)
-- [序言 Harness、终端与工程约束](./book1-claude-code/preface.md)
-- [第 1 章 为什么需要 Harness Engineering](./book1-claude-code/chapter-01-why-harness-engineering.md)
-- [第 2 章 Prompt 不是人格，Prompt 是控制平面](./book1-claude-code/chapter-02-prompt-is-control-plane.md)
-- [第 3 章 Query Loop：代理系统的心跳](./book1-claude-code/chapter-03-query-loop-heartbeat.md)
-- [第 4 章 工具、权限与中断：为什么代理不能直接碰世界](./book1-claude-code/chapter-04-tools-permissions-interrupts.md)
-- [第 5 章 上下文治理：Memory、CLAUDE.md 与 Compact 是预算制度](./book1-claude-code/chapter-05-context-memory-compact.md)
-- [第 6 章 错误与恢复：出错后仍能继续工作的代理系统](./book1-claude-code/chapter-06-errors-and-recovery.md)
-- [第 7 章 多代理与验证：用分工和验证管理不稳定性](./book1-claude-code/chapter-07-multi-agent-and-verification.md)
-- [第 8 章 团队落地：把一个聪明工具变成可复用制度](./book1-claude-code/chapter-08-team-landing-practices.md)
-- [第 9 章 Harness Engineering 十条原则](./book1-claude-code/chapter-09-ten-principles.md)
-- [附录 A 检查清单：把原则落成能执行的约束](./book1-claude-code/appendix-a-checklists.md)
-- [附录 B 图示：把运行时骨架画出来](./book1-claude-code/appendix-b-diagram-notes.md)
-- [附录 C 源码地图：本书各章主要依据哪些文件](./book1-claude-code/appendix-c-source-map.md)
+- [Introduction](./book1-claude-code/locales/en/index.md)
+- [Preface: Harness, Terminals, and Engineering Constraints](./book1-claude-code/locales/en/preface.md)
+- [Chapter 1 Why Harness Engineering Matters](./book1-claude-code/locales/en/chapter-01-why-harness-engineering.md)
+- [Chapter 2 Prompt Is Not Personality, Prompt Is the Control Plane](./book1-claude-code/locales/en/chapter-02-prompt-is-control-plane.md)
+- [Chapter 3 Query Loop: The Heartbeat of an Agent System](./book1-claude-code/locales/en/chapter-03-query-loop-heartbeat.md)
+- [Chapter 4 Tools, Permissions, and Interrupts: Why Agents Cannot Touch the World Directly](./book1-claude-code/locales/en/chapter-04-tools-permissions-interrupts.md)
+- [Chapter 5 Context Governance: Memory, CLAUDE.md, and Compact as a Budgeting Regime](./book1-claude-code/locales/en/chapter-05-context-memory-compact.md)
+- [Chapter 6 Errors and Recovery: An Agent System That Keeps Working After Failure](./book1-claude-code/locales/en/chapter-06-errors-and-recovery.md)
+- [Chapter 7 Multi-Agent Work and Verification: Managing Instability Through Division of Labor](./book1-claude-code/locales/en/chapter-07-multi-agent-and-verification.md)
+- [Chapter 8 Team Adoption: Turning a Smart Tool into a Reusable Institution](./book1-claude-code/locales/en/chapter-08-team-landing-practices.md)
+- [Chapter 9 Ten Principles of Harness Engineering](./book1-claude-code/locales/en/chapter-09-ten-principles.md)
+- [Appendix A Checklists: Turning Principles into Executable Constraints](./book1-claude-code/locales/en/appendix-a-checklists.md)
+- [Appendix B Diagrams: Drawing the Runtime Skeleton](./book1-claude-code/locales/en/appendix-b-diagram-notes.md)
+- [Appendix C Source Map: Which Files Ground Each Chapter](./book1-claude-code/locales/en/appendix-c-source-map.md)
 
-### Book 2 — Claude Code 和 Codex 的 Harness 设计哲学
+### Book 2 — The Harness Design Philosophies of Claude Code and Codex
 
-- [导读](./book2-comparing/index.md)
-- [阅读地图：如何理解第一本书与这本比较书](./book2-comparing/chapter-00-reading-map.md)
-- [序言 两套 Harness，不必假装是同一匹马的附件](./book2-comparing/preface.md)
-- [第 1 章 为什么要把 Claude Code 和 Codex 放在一起看](./book2-comparing/chapter-01-why-this-comparison.md)
-- [第 2 章 两种控制面：Prompt 拼装与 Instruction Fragment](./book2-comparing/chapter-02-two-control-planes.md)
-- [第 3 章 心跳放在哪：Query Loop 对照 Thread、Rollout 与 State](./book2-comparing/chapter-03-loop-thread-and-rollout.md)
-- [第 4 章 工具、沙箱与策略语言：谁来阻止模型动手太快](./book2-comparing/chapter-04-tools-sandbox-and-exec-policy.md)
-- [第 5 章 技能、Hook 与本地规则：系统如何学会守乡约](./book2-comparing/chapter-05-skills-hooks-and-local-governance.md)
-- [第 6 章 委派、验证与持久状态：谁来防止系统自己给自己打高分](./book2-comparing/chapter-06-delegation-verification-and-state.md)
-- [第 7 章 殊途同归，还是各表一枝](./book2-comparing/chapter-07-convergence-and-divergence.md)
-- [第 8 章 如果你要自己做：该向谁学，先学什么](./book2-comparing/chapter-08-how-to-choose-or-build.md)
-- [附录 A 源码地图：这套比较主要依据哪些文件](./book2-comparing/appendix-a-source-map.md)
-- [附录 B 检查清单：如何判断你的 Harness 更像 Claude Code、Codex，还是半成品](./book2-comparing/appendix-b-checklists.md)
+- [Introduction](./book2-comparing/locales/en/index.md)
+- [Reading Map: How to Understand Book 1 and This Comparative Book Together](./book2-comparing/locales/en/chapter-00-reading-map.md)
+- [Preface: Two Harnesses, Not Accessories on the Same Horse](./book2-comparing/locales/en/preface.md)
+- [Chapter 1: Why We Compare Claude Code and Codex](./book2-comparing/locales/en/chapter-01-why-this-comparison.md)
+- [Chapter 2: Two Control Planes: Prompt Assembly and Instruction Fragments](./book2-comparing/locales/en/chapter-02-two-control-planes.md)
+- [Chapter 3: Where the Heartbeat Lives: Query Loop Compared with Thread, Rollout, and State](./book2-comparing/locales/en/chapter-03-loop-thread-and-rollout.md)
+- [Chapter 4: Tools, Sandboxes, and Policy Languages: Who Stops the Model from Moving Too Fast](./book2-comparing/locales/en/chapter-04-tools-sandbox-and-exec-policy.md)
+- [Chapter 5: Skills, Hooks, and Local Rules: How a System Learns Local Discipline](./book2-comparing/locales/en/chapter-05-skills-hooks-and-local-governance.md)
+- [Chapter 6: Delegation, Verification, and Persistent State: Who Prevents a System from Grading Itself](./book2-comparing/locales/en/chapter-06-delegation-verification-and-state.md)
+- [Chapter 7: Convergence Through Different Roads, or Separate Branches](./book2-comparing/locales/en/chapter-07-convergence-and-divergence.md)
+- [Chapter 8: If You Are Building Your Own Harness, What to Study First](./book2-comparing/locales/en/chapter-08-how-to-choose-or-build.md)
+- [Appendix A: Source Map That Underpins the Comparison](./book2-comparing/locales/en/appendix-a-source-map.md)
+- [Appendix B: Checklist to Determine Where Your Harness Sits](./book2-comparing/locales/en/appendix-b-checklists.md)
 
 </details>
 
-## 想继续实践？试试 AgentWay
+## Want To Keep Practicing? Try AgentWay
 
 <table>
 <tr>
@@ -120,23 +122,25 @@
   </a>
 </td>
 <td valign="middle">
-  <b><a href="https://agentway.dev/">AgentWay</a></b> 是和本书主题相关、但彼此独立的实践平台。Harness Books 负责把控制结构、判断方式和架构分歧讲清楚；AgentWay 更偏向把这些方法继续落到训练路径、练习、项目演练和 agent PoC 上。如果你不想停留在“已经看懂”，而是想继续动手实践，可以单独了解它。
+  <b><a href="https://agentway.dev/">AgentWay</a></b> is a related but separate practice platform. Harness Books explains control structures, engineering judgments, and architectural divergences. AgentWay is where these ideas continue into training paths, drills, project exercises, and agent PoCs.
 </td>
 </tr>
 </table>
 
-## 本地构建
+## Local Build
 
-分别构建两个 Honkit 站点，再组装为统一的 Pages 静态站点：
+Build the two locale-aware Honkit sites and then assemble the unified Pages site:
 
 ```bash
-cd book1-claude-code && npx --yes honkit build . _book && cd ..
-cd book2-comparing && npx --yes honkit build . _book && cd ..
+python3 tools/book-kit/build_honkit.py book1-claude-code
+python3 tools/book-kit/build_honkit.py book1-claude-code --locale en
+python3 tools/book-kit/build_honkit.py book2-comparing
+python3 tools/book-kit/build_honkit.py book2-comparing --locale en
 python3 tools/book-kit/build_pages_site.py
 ```
 
-最终输出目录为 `dist/`。
+Final output is written to `dist/`.
 
 ---
 
-<sub>Keywords: Harness Engineering, Claude Code guide, Claude Code vs Codex, AI coding agent, control plane, query loop, agent recovery, agent verification, local governance, approval policy · 驾驭工程, Claude Code 指南, Claude Code 与 Codex 对比, AI 编程代理, 控制面, 查询循环, Agent 恢复, Agent 验证, 本地治理, 审批策略</sub>
+<sub>Keywords: Harness Engineering, Claude Code guide, Claude Code vs Codex, AI coding agent, control plane, query loop, agent recovery, agent verification, local governance, approval policy</sub>

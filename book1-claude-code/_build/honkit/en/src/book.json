@@ -1,0 +1,32 @@
+{
+  "title": "Harness Engineering: A Design Guide to Claude Code",
+  "description": "An English edition skeleton for the book on harness engineering principles behind Claude Code.",
+  "author": "OpenAI Codex",
+  "language": "en",
+  "root": ".",
+  "styles": {
+    "website": "styles/website.css",
+    "pdf": "styles/pdf.css"
+  },
+  "plugins": [],
+  "pluginsConfig": {},
+  "readme_path": "index.md",
+  "release_date": "2026-04-01",
+  "draft_label": "Draft",
+  "front_page_heading": "Introduction",
+  "cover_image": "assets/cover-wxb-en.svg",
+  "cover_alt": "Cover: Harness Engineering: A Design Guide to Claude Code",
+  "outputs": {
+    "print_html": "exported/book1-claude-code-en-print.html",
+    "pdf": "exported/book1-claude-code-en.pdf",
+    "print_pdf": "exported/book1-claude-code-en-print.pdf",
+    "book_pdf": "exported/book1-claude-code-en-book.pdf"
+  },
+  "title_page_lines": [
+    "From using agents to shipping an agent PoC",
+    "https://agentway.dev"
+  ],
+  "pdf": {
+    "documentclass": "book"
+  }
+}

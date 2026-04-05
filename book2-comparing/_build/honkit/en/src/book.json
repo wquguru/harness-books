@@ -1,0 +1,32 @@
+{
+  "title": "The Harness Design Philosophies of Claude Code and Codex",
+  "description": "An English edition skeleton for the comparative book on Claude Code and Codex.",
+  "author": "OpenAI Codex",
+  "language": "en",
+  "root": ".",
+  "styles": {
+    "website": "styles/website.css",
+    "pdf": "styles/pdf.css"
+  },
+  "plugins": [],
+  "pluginsConfig": {},
+  "readme_path": "index.md",
+  "release_date": "2026-04-01",
+  "draft_label": "Draft",
+  "front_page_heading": "Introduction",
+  "cover_image": "assets/cover-wxb-en.svg",
+  "cover_alt": "Cover: The Harness Design Philosophies of Claude Code and Codex",
+  "outputs": {
+    "print_html": "exported/book2-comparing-en-print.html",
+    "pdf": "exported/book2-comparing-en.pdf",
+    "print_pdf": "exported/book2-comparing-en-print.pdf",
+    "book_pdf": "exported/book2-comparing-en-book.pdf"
+  },
+  "title_page_lines": [
+    "From using agents to shipping an agent PoC",
+    "https://agentway.dev"
+  ],
+  "pdf": {
+    "documentclass": "book"
+  }
+}

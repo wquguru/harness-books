@@ -7,6 +7,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from book_meta import (
     chapter_paths,
@@ -23,6 +24,7 @@ SECTION_RE = re.compile(
     re.DOTALL,
 )
 PAGE_RE = re.compile(r"gitbook\.page\.hasChanged\((\{.*?\})\);", re.DOTALL)
+HTML_ATTR_RE = re.compile(r'(?P<attr>href|src)="(?P<url>[^"]+)"')
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -55,6 +57,69 @@ def load_page(book_output_dir: Path, md_path: str) -> tuple[str, str]:
     return title, section_match.group(1).strip()
 
 
+def html_name_for_md_path(md_path: str) -> str:
+    return "index.html" if md_path == "README.md" else md_path.replace(".md", ".html")
+
+
+def anchor_for_md_path(md_path: str, index: int) -> str:
+    stem = Path(md_path).stem
+    if md_path == "README.md":
+        stem = "readme"
+    return f"article-{index + 1}-{stem}"
+
+
+def is_external_url(url: str) -> bool:
+    return url.startswith(("http://", "https://", "mailto:", "tel:", "data:", "javascript:", "#"))
+
+
+def rebase_local_url(url: str, *, book_dir: Path, output_parent: Path) -> str:
+    parts = urlsplit(url)
+    if not parts.path:
+        return url
+    rebased = os.path.relpath(book_dir / parts.path, output_parent)
+    return urlunsplit(("", "", rebased, parts.query, parts.fragment))
+
+
+def rewrite_section_html(
+    section_html: str,
+    *,
+    md_path: str,
+    anchor_map: dict[str, str],
+    book_dir: Path,
+    output_parent: Path,
+    cover_image: str | None = None,
+    cover_alt: str | None = None,
+) -> str:
+    if cover_image and cover_alt:
+        section_html = re.sub(
+            rf'(<img\b[^>]*\balt="{re.escape(html.escape(cover_alt))}"[^>]*\bsrc=")([^"]+)(")',
+            rf"\1{cover_image}\3",
+            section_html,
+            count=1,
+        )
+
+    def replace_attr(match: re.Match[str]) -> str:
+        attr = match.group("attr")
+        url = match.group("url")
+        if is_external_url(url):
+            return match.group(0)
+
+        parts = urlsplit(url)
+        target = parts.path
+        if attr == "href" and target.endswith(".html"):
+            anchor = anchor_map.get(target)
+            if anchor:
+                fragment = f"#{anchor}"
+                if parts.fragment:
+                    fragment = f"{fragment}-{parts.fragment}"
+                return f'{attr}="{fragment}"'
+
+        rebased = rebase_local_url(url, book_dir=book_dir, output_parent=output_parent)
+        return f'{attr}="{html.escape(rebased, quote=True)}"'
+
+    return HTML_ATTR_RE.sub(replace_attr, section_html)
+
+
 def default_print_font_stack(language: str) -> str:
     if language.startswith("zh"):
         return '"Noto Serif SC", "Songti SC", "STSong", serif'
@@ -70,9 +135,23 @@ def build_html(book_dir: Path, meta: dict, source_dir: Path, book_output_dir: Pa
     website_style_path = os.path.relpath(book_dir / "styles" / "website.css", output_parent)
     pdf_style_path = os.path.relpath(book_dir / "styles" / "pdf.css", output_parent)
     font_stack = meta.get("print_font_stack") or default_print_font_stack(str(meta.get("language", "")))
+    chapter_list = chapter_paths(source_dir)
+    anchor_map = {
+        html_name_for_md_path(md_path): anchor_for_md_path(md_path, index)
+        for index, md_path in enumerate(chapter_list)
+    }
 
-    for index, md_path in enumerate(chapter_paths(source_dir)):
+    for index, md_path in enumerate(chapter_list):
         title, body = load_page(book_output_dir, md_path)
+        body = rewrite_section_html(
+            body,
+            md_path=md_path,
+            anchor_map=anchor_map,
+            book_dir=book_dir,
+            output_parent=output_parent,
+            cover_image=str(meta.get("cover_image", "")).strip() or None if index == 0 else None,
+            cover_alt=str(meta.get("cover_alt", "")).strip() or None if index == 0 else None,
+        )
         chapter_class = "book-cover" if index == 0 else "book-chapter"
         heading = "" if index == 0 else f"<header><h1>{html.escape(title)}</h1></header>"
         edition = ""
@@ -85,7 +164,7 @@ def build_html(book_dir: Path, meta: dict, source_dir: Path, book_output_dir: Pa
         articles.append(
             "\n".join(
                 [
-                    f'<article class="{chapter_class}" data-source="{html.escape(md_path)}">',
+                    f'<article id="{anchor_for_md_path(md_path, index)}" class="{chapter_class}" data-source="{html.escape(md_path)}">',
                     heading,
                     body,
                     edition,

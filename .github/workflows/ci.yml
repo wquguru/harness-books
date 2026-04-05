@@ -1,26 +1,17 @@
-name: Deploy GitHub Pages
+name: CI
 
 on:
+  pull_request:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: github-pages
-  cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-validate:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,16 +38,10 @@ jobs:
             texlive-xetex \
             texlive-lang-chinese
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build book1 website
+      - name: Build Honkit sites
         run: |
           python3 tools/book-kit/build_honkit.py book1-claude-code
           python3 tools/book-kit/build_honkit.py book1-claude-code --locale en
-
-      - name: Build book2 website
-        run: |
           python3 tools/book-kit/build_honkit.py book2-comparing
           python3 tools/book-kit/build_honkit.py book2-comparing --locale en
 
@@ -67,7 +52,7 @@ jobs:
           python3 tools/book-kit/build_print_html.py book2-comparing
           python3 tools/book-kit/build_print_html.py book2-comparing --locale en
 
-      - name: Export PDFs
+      - name: Export bilingual PDFs
         env:
           PDF_MAINFONT: Noto Serif CJK SC
           PDF_CJK_MAINFONT: Noto Serif CJK SC
@@ -84,22 +69,19 @@ jobs:
           CUSTOM_DOMAIN: harness-books.agentway.dev
         run: python3 tools/book-kit/build_pages_site.py
 
-      - name: Verify published site payload
+      - name: Verify bilingual outputs
         run: |
+          test -f book1-claude-code/_book/index.html
+          test -f book1-claude-code/_book/en/index.html
+          test -f book2-comparing/_book/index.html
+          test -f book2-comparing/_book/en/index.html
+          test -f book1-claude-code/exported/book1-claude-code.pdf
+          test -f book1-claude-code/exported/book1-claude-code-en.pdf
+          test -f book2-comparing/exported/book2-comparing.pdf
+          test -f book2-comparing/exported/book2-comparing-en.pdf
           test -f dist/index.html
           test -f dist/en/index.html
           test -f dist/book1-claude-code/index.html
           test -f dist/en/book1-claude-code/index.html
           test -f dist/book2-comparing/index.html
           test -f dist/en/book2-comparing/index.html
-          test -f dist/en/book1-claude-code/exported/book1-claude-code-en.pdf
-          test -f dist/en/book2-comparing/exported/book2-comparing-en.pdf
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

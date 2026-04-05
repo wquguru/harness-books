@@ -1,0 +1,16 @@
+# Summary
+
+- [Introduction](index.md)
+- [Preface: Harness, Terminals, and Engineering Constraints](preface.md)
+- [Chapter 1 Why Harness Engineering Matters](chapter-01-why-harness-engineering.md)
+- [Chapter 2 Prompt Is Not Personality, Prompt Is the Control Plane](chapter-02-prompt-is-control-plane.md)
+- [Chapter 3 Query Loop: The Heartbeat of an Agent System](chapter-03-query-loop-heartbeat.md)
+- [Chapter 4 Tools, Permissions, and Interrupts: Why Agents Cannot Touch the World Directly](chapter-04-tools-permissions-interrupts.md)
+- [Chapter 5 Context Governance: Memory, CLAUDE.md, and Compact as a Budgeting Regime](chapter-05-context-memory-compact.md)
+- [Chapter 6 Errors and Recovery: An Agent System That Keeps Working After Failure](chapter-06-errors-and-recovery.md)
+- [Chapter 7 Multi-Agent Work and Verification: Managing Instability Through Division of Labor](chapter-07-multi-agent-and-verification.md)
+- [Chapter 8 Team Adoption: Turning a Smart Tool into a Reusable Institution](chapter-08-team-landing-practices.md)
+- [Chapter 9 Ten Principles of Harness Engineering](chapter-09-ten-principles.md)
+- [Appendix A Checklists: Turning Principles into Executable Constraints](appendix-a-checklists.md)
+- [Appendix B Diagrams: Drawing the Runtime Skeleton](appendix-b-diagram-notes.md)
+- [Appendix C Source Map: Which Files Ground Each Chapter](appendix-c-source-map.md)

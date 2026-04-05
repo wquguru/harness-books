@@ -4,6 +4,7 @@ import argparse
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from book_meta import chapter_paths, load_meta, resolve_book_dir, resolve_build_dir, resolve_source_dir
@@ -59,27 +60,65 @@ def stage_source(book_dir: Path, source_dir: Path, locale: str | None) -> Path:
     return stage_src
 
 
+def locale_codes(book_dir: Path) -> list[str]:
+    locales_dir = book_dir / "locales"
+    if not locales_dir.exists():
+        return []
+    return sorted(path.name for path in locales_dir.iterdir() if path.is_dir())
+
+
+def preserve_locale_builds(book_dir: Path, build_dir: Path, locale: str | None) -> tuple[Path, list[tuple[Path, Path]]]:
+    temp_root = Path(tempfile.mkdtemp(prefix="honkit-preserve-"))
+    preserved: list[tuple[Path, Path]] = []
+    if locale is not None:
+        return temp_root, preserved
+    for code in locale_codes(book_dir):
+        locale_build = build_dir / code
+        if not locale_build.exists():
+            continue
+        temp_target = temp_root / code
+        shutil.move(str(locale_build), str(temp_target))
+        preserved.append((temp_target, locale_build))
+    return temp_root, preserved
+
+
+def restore_locale_builds(temp_root: Path, preserved: list[tuple[Path, Path]]) -> None:
+    try:
+        for temp_source, target in preserved:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if target.exists():
+                shutil.rmtree(target)
+            shutil.move(str(temp_source), str(target))
+    finally:
+        shutil.rmtree(temp_root, ignore_errors=True)
+
+
 def main() -> None:
     args = parse_args(sys.argv[1:])
     book_dir = resolve_book_dir(args.book_dir)
     source_dir = resolve_source_dir(book_dir, args.locale)
     build_dir = resolve_build_dir(book_dir, args.locale)
 
-    if args.clean:
-        if build_dir.exists():
-            shutil.rmtree(build_dir)
-        stage_root = book_dir / "_build" / "honkit" / (args.locale or "default")
-        if stage_root.exists():
-            shutil.rmtree(stage_root)
+    temp_root, preserved = preserve_locale_builds(book_dir, build_dir, args.locale)
+    try:
+        if args.clean:
+            if build_dir.exists():
+                shutil.rmtree(build_dir)
+            stage_root = book_dir / "_build" / "honkit" / (args.locale or "default")
+            if stage_root.exists():
+                shutil.rmtree(stage_root)
 
-    stage_src = stage_source(book_dir, source_dir, args.locale)
-    build_dir.parent.mkdir(parents=True, exist_ok=True)
+        stage_src = stage_source(book_dir, source_dir, args.locale)
+        build_dir.parent.mkdir(parents=True, exist_ok=True)
 
-    subprocess.run(
-        ["npx", "--yes", "honkit", "build", str(stage_src), str(build_dir)],
-        cwd=book_dir,
-        check=True,
-    )
+        subprocess.run(
+            ["npx", "--yes", "honkit", "build", str(stage_src), str(build_dir)],
+            cwd=book_dir,
+            check=True,
+        )
+    finally:
+        restore_locale_builds(temp_root, preserved)
+
     print(build_dir)
 
 

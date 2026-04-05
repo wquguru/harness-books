@@ -26,6 +26,7 @@ SITE_LOCALES = (
     {"code": "zh-Hans", "prefix": "", "name": "中文"},
     {"code": "en", "prefix": "en", "name": "English"},
 )
+LOCALE_STORAGE_KEY = "harness-books-locale"
 
 
 def locale_config(locale: str) -> dict[str, str]:
@@ -110,6 +111,99 @@ def locale_name(locale: str) -> str:
         if item["code"] == locale:
             return item["name"]
     return locale
+
+
+def locale_code_to_prefix(locale: str) -> str:
+    for item in SITE_LOCALES:
+        if item["code"] == locale:
+            return item["prefix"]
+    return ""
+
+
+def detect_locale_from_path(path: str) -> str:
+    normalized = path.strip("/")
+    if normalized == "en" or normalized.startswith("en/"):
+        return "en"
+    return "zh-Hans"
+
+
+def localized_book_target(current_slug: str, current_page: str, target_locale: str) -> str:
+    target_prefix = locale_code_to_prefix(target_locale)
+    book_root = Path(target_prefix) / current_slug if target_prefix else Path(current_slug)
+    normalized_page = current_page.strip()
+    if not normalized_page or normalized_page == ".":
+        normalized_page = "index.html"
+    return str(book_root / normalized_page)
+
+
+LOCALE_SWITCH_SCRIPT = f"""
+<script>
+(function () {{
+  var storageKey = {json.dumps(LOCALE_STORAGE_KEY)};
+
+  function safeLocalStorage() {{
+    try {{
+      return window.localStorage;
+    }} catch (error) {{
+      return null;
+    }}
+  }}
+
+  function readStoredLocale() {{
+    var storage = safeLocalStorage();
+    if (!storage) return "";
+    try {{
+      return storage.getItem(storageKey) || "";
+    }} catch (error) {{
+      return "";
+    }}
+  }}
+
+  function writeStoredLocale(locale) {{
+    var storage = safeLocalStorage();
+    if (!storage) return;
+    try {{
+      storage.setItem(storageKey, locale);
+    }} catch (error) {{
+      return;
+    }}
+  }}
+
+  function detectBrowserLocale() {{
+    var languages = navigator.languages && navigator.languages.length
+      ? navigator.languages
+      : [navigator.language || navigator.userLanguage || ""];
+    for (var index = 0; index < languages.length; index += 1) {{
+      var value = String(languages[index] || "").toLowerCase();
+      if (!value) continue;
+      if (value.indexOf("zh") === 0) return "zh-Hans";
+      if (value.indexOf("en") === 0) return "en";
+    }}
+    return "zh-Hans";
+  }}
+
+  document.addEventListener("click", function (event) {{
+    var target = event.target.closest("[data-hb-locale]");
+    if (!target) return;
+    writeStoredLocale(target.getAttribute("data-hb-locale") || "");
+  }});
+
+  if (!document.documentElement.hasAttribute("data-hb-autodetect")) return;
+
+  var currentLocale = document.documentElement.getAttribute("data-locale") || "zh-Hans";
+  var preferredLocale = readStoredLocale() || detectBrowserLocale();
+  if (!preferredLocale || preferredLocale === currentLocale) {{
+    writeStoredLocale(currentLocale);
+    return;
+  }}
+
+  var targetPrefix = preferredLocale === "en" ? "/en/" : "/";
+  var currentPath = window.location.pathname || "/";
+  if (currentPath !== "/" && currentPath !== "/index.html") return;
+  window.location.replace(targetPrefix);
+}})();
+</script>
+""".strip()
 
 
 def relative_href(from_dir: str, to_path: str) -> str:
@@ -1240,6 +1334,7 @@ def copy_book_output(book_dir: Path, target_dir: Path, locale: str) -> None:
 
 def build_switcher_markup(
     current_slug: str,
+    current_page: str,
     books: list[dict[str, str]],
     repository_url: str,
     locale: str,
@@ -1266,17 +1361,13 @@ def build_switcher_markup(
             f'{escape(book["title"])}</a>'
         )
     for locale_item in SITE_LOCALES:
-        target_prefix = locale_item["prefix"]
-        target = (
-            str(Path(target_prefix) / current_slug / "index.html")
-            if target_prefix
-            else str(Path(current_slug) / "index.html")
-        )
+        target = localized_book_target(current_slug, current_page, locale_item["code"])
         classes = "hb-site-switcher__link"
         if locale_item["code"] == locale:
             classes += " is-active"
         link_parts.append(
-            f'<a class="{classes}" href="{escape(relative_href(current_dir, target))}">{escape(locale_item["name"])}</a>'
+            f'<a class="{classes}" href="{escape(relative_href(current_dir, target))}" '
+            f'data-hb-locale="{escape(locale_item["code"])}">{escape(locale_item["name"])}</a>'
         )
     if current_book.get("pdf_path"):
         pdf_target = (
@@ -1312,18 +1403,21 @@ def inject_switcher(
     repository_url: str,
     locale: str,
 ) -> None:
-    switcher_markup = build_switcher_markup(current_slug, books, repository_url, locale)
     for html_path in book_publish_dir.rglob("*.html"):
         if "gitbook" in html_path.parts:
             continue
         html = html_path.read_text(encoding="utf-8")
         if "hb-site-switcher" in html:
             continue
+        current_page = html_path.relative_to(book_publish_dir).as_posix()
+        switcher_markup = build_switcher_markup(
+            current_slug, current_page, books, repository_url, locale
+        )
         html = html.replace(
             'content="width=device-width, initial-scale=1, user-scalable=no"',
             'content="width=device-width, initial-scale=1, viewport-fit=cover"',
         )
-        html = html.replace("</head>", f"{BOOK_SWITCHER_CSS}\n</head>", 1)
+        html = html.replace("</head>", f"{BOOK_SWITCHER_CSS}\n{LOCALE_SWITCH_SCRIPT}\n</head>", 1)
         html = html.replace(
             "<body>",
             f"<body>\n{switcher_markup}",
@@ -1701,17 +1795,19 @@ def make_index_html(books: list[dict[str, str]], repository_url: str, locale: st
         if item["code"] == locale:
             classes = "button button--primary"
         language_links.append(
-            f'<a class="{classes}" href="{escape(relative_href(current_dir, target))}">{escape(item["name"])}</a>'
+            f'<a class="{classes}" href="{escape(relative_href(current_dir, target))}" '
+            f'data-hb-locale="{escape(item["code"])}">{escape(item["name"])}</a>'
         )
     language_switch = "".join(language_links)
     return f"""<!DOCTYPE html>
-<html lang="{escape(strings["root_lang"])}">
+<html lang="{escape(strings["root_lang"])}" data-locale="{escape(locale)}"{' data-hb-autodetect="1"' if locale == 'zh-Hans' else ''}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{escape(strings["root_title"])}</title>
   <meta name="description" content="{escape(strings["root_description"])}">
   {SITE_INDEX_CSS}
+  {LOCALE_SWITCH_SCRIPT}
 </head>
 <body>
   <main class="site-shell">

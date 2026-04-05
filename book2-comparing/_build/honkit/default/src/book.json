@@ -1,0 +1,27 @@
+{
+  "title": "Claude Code 和 Codex 的 Harness 设计哲学",
+  "description": "一部比较 Claude Code 与 Codex harness 设计哲学的工程长文。",
+  "author": "OpenAI Codex",
+  "language": "zh-Hans",
+  "root": ".",
+  "styles": {
+    "website": "styles/website.css",
+    "pdf": "styles/pdf.css"
+  },
+  "plugins": [],
+  "pluginsConfig": {},
+  "readme_path": "index.md",
+  "release_date": "2026-04-01",
+  "cover_image": "assets/cover-wxb.svg",
+  "cover_alt": "封面：Claude Code 和 Codex 的 Harness 设计哲学",
+  "outputs": {
+    "print_html": "exported/book2-comparing-print.html",
+    "pdf": "exported/book2-comparing.pdf",
+    "print_pdf": "exported/book2-comparing-print.pdf",
+    "book_pdf": "exported/book2-comparing-book.pdf"
+  },
+  "title_page_lines": [
+    "从会用 Agent，到做出 Agent PoC",
+    "https://agentway.dev"
+  ]
+}

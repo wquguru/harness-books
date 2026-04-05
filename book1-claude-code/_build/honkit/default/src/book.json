@@ -1,0 +1,27 @@
+{
+  "title": "Harness Engineering：Claude Code 设计指南",
+  "description": "一部从 Claude Code 源码抽象 AI 编程系统工程原则的中文书稿。",
+  "author": "OpenAI Codex",
+  "language": "zh-Hans",
+  "root": ".",
+  "styles": {
+    "website": "styles/website.css",
+    "pdf": "styles/pdf.css"
+  },
+  "plugins": [],
+  "pluginsConfig": {},
+  "readme_path": "index.md",
+  "release_date": "2026-04-01",
+  "cover_image": "assets/cover-wxb.svg",
+  "cover_alt": "封面：Harness Engineering：Claude Code 设计指南",
+  "outputs": {
+    "print_html": "exported/book1-claude-code-print.html",
+    "pdf": "exported/book1-claude-code.pdf",
+    "print_pdf": "exported/book1-claude-code-print.pdf",
+    "book_pdf": "exported/book1-claude-code-book.pdf"
+  },
+  "title_page_lines": [
+    "从会用 Agent，到做出 Agent PoC",
+    "https://agentway.dev"
+  ]
+}
