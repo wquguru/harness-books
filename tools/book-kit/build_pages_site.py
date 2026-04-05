@@ -1156,7 +1156,7 @@ def load_book_metadata(book_dir: Path, locale: str) -> dict[str, str]:
     extras = extras_by_locale.get(locale, {}).get(book_dir.name, {})
     prefix = locale_prefix(locale)
     cover_rel = str(book_json.get("cover_image", f"assets/cover-wxb.svg")).strip() or "assets/cover-wxb.svg"
-    cover = f"{book_dir.name}/{cover_rel}" if not prefix else f"{prefix}/{book_dir.name}/{cover_rel}"
+    cover = f"{book_dir.name}/{cover_rel}"
     return {
         "slug": book_dir.name,
         "locale": locale,
@@ -1323,6 +1323,13 @@ def copy_book_output(book_dir: Path, target_dir: Path, locale: str) -> None:
         if target_assets.exists():
             shutil.rmtree(target_assets)
         shutil.copytree(assets_dir, target_assets)
+
+    diagrams_dir = book_dir / "diagrams"
+    if diagrams_dir.exists():
+        target_diagrams = target_dir / "diagrams"
+        if target_diagrams.exists():
+            shutil.rmtree(target_diagrams)
+        shutil.copytree(diagrams_dir, target_diagrams, ignore=shutil.ignore_patterns("*.puml"))
 
     exported_dir = book_dir / "exported"
     if exported_dir.exists():
