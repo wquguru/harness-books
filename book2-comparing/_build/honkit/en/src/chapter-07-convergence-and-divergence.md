@@ -66,6 +66,8 @@ The saner approach is:
 - if you fear institutional drift, make instruction, tool, policy, and state explicit first
 - once the primary contradiction stabilizes, gradually build the opposite side
 
+One more caution belongs here. In practice many younger systems do neither job fully. They neither harden runtime discipline nor make the control layer truly explicit. Instead they take a third, easier-looking road: keep stuffing more bootstrap files, role descriptions, skill explanations, and workspace text into prompt, hoping that informational fullness will compensate for a weak skeleton. Such systems often appear workable in the short term, but over longer sessions they expose the same double failure: tokens are expensive, and working semantics are still unstable.
+
 ## 7.5 Final judgment
 
 The question in the title can now be answered directly.
@@ -77,6 +79,8 @@ They are also distinct branches of the same larger problem.
 "Convergence" names the reality they both accept: the model is unreliable, and harness is where order comes from.
 
 "Different branches" names the different political economy through which that reality is implemented: Claude Code trusts runtime discipline more, while Codex trusts explicit control layers more.
+
+Systems that rely mainly on prompt stacking to hold context together sit in a less settled middle zone. They have already realized that models forget and drift, so they add memory, skills, and compaction. But if context governance still follows a "inject first, rescue later" logic, then the system still has not decided clearly which layer should own order.
 
 Neither path is inherently nobler. The real question is this: in which layer is your system prepared to cage uncertainty?
 

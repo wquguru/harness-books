@@ -77,6 +77,22 @@ Prioritize learning from Codex when it comes to:
 
 This is not compromise for its own sake. It contains a hidden requirement: you must know what you are learning and why. The correct reason to borrow something is that it repairs your weakness, not merely that someone else already built it.
 
+<p>If you carry the context-governance judgments from the first volume into third-party harnesses, you can identify a common but costly route much more easily. It does not begin by separating context into units with different lifetimes, duties, and entry costs. Instead it tries to pack bootstrap files, skill descriptions, identity settings, and workspace text into prompt as far as possible, then leans on truncation, compaction, and recovery chains once the window gets tight.</p>
+
+<p>Systems on this route may still have memory, skills, and compaction, and they may even impose upper bounds. But the governing axis remains "inject first, rescue later." That is the real problem. Once context is organized mainly by piling up text, token waste is only the first cost. The deeper cost is signal dilution: the model sees more things, but is not necessarily clearer about which working semantics matter for the next action.</p>
+
+<p>If you wanted a one-sentence summary of the three routes, it would look like this:</p>
+
+<ul>
+  <li>Claude Code treats context more like working memory, first deciding what must survive and what should be compressed.</li>
+  <li>Codex treats context more like structured units, first deciding source type, scope, and state handoff.</li>
+  <li>Systems in the OpenClaw family treat context more like a prompt container, first deciding what else can still be packed in before the limit.</li>
+</ul>
+
+<p>That is why teams often begin by feeling that these systems are "more informed," then later complain about two things at once: tokens are burned quickly, and the quality does not become steadily better as context gets fatter. The system is solving how much can be inserted, not what must be preserved for continued work.</p>
+
+<p><img src="diagrams/diag-05-context-governance-three-paths.png" alt="Three-path comparison of context governance" /></p>
+
 ## 8.4 One dangerous misconception: explicitness and flexibility are not natural enemies
 
 System builders often rely on a lazy false opposition.

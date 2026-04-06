@@ -1,6 +1,7 @@
 # Summary
 
 - [Introduction and reading map](index.md)
+- [Reading Map: How to Read Book One and This Comparative Book Together](chapter-00-reading-map.md)
 - [Preface: Two harnesses, not one accessory pack](preface.md)
 - [Chapter 1: Why we compare Claude Code and Codex](chapter-01-why-this-comparison.md)
 - [Chapter 2: Two control planes—dynamic prompt layers vs. structured fragments](chapter-02-two-control-planes.md)
