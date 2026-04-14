@@ -6,7 +6,8 @@
   "root": ".",
   "styles": {
     "website": "styles/website.css",
-    "pdf": "styles/pdf.css"
+    "pdf": "styles/pdf.css",
+    "epub": "styles/epub.css"
   },
   "plugins": [],
   "pluginsConfig": {},
@@ -20,7 +21,8 @@
     "print_html": "exported/book2-comparing-en-print.html",
     "pdf": "exported/book2-comparing-en.pdf",
     "print_pdf": "exported/book2-comparing-en-print.pdf",
-    "book_pdf": "exported/book2-comparing-en-book.pdf"
+    "book_pdf": "exported/book2-comparing-en-book.pdf",
+    "epub": "exported/book2-comparing-en.epub"
   },
   "title_page_lines": [
     "From using agents to shipping an agent PoC",
@@ -28,5 +30,14 @@
   ],
   "pdf": {
     "documentclass": "book"
+  },
+  "epub": {
+    "cover_image": "assets/cover-wxb-en.svg",
+    "cover_alt": "Cover: The Harness Design Philosophies of Claude Code and Codex",
+    "css": "styles/epub.css",
+    "fonts": [],
+    "embed_fonts": true,
+    "identifier": "urn:uuid:generated",
+    "rights": "CC BY-NC-SA 4.0"
   }
 }
