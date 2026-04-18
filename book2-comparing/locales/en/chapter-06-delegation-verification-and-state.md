@@ -2,66 +2,45 @@
 
 ## 6.1 The real problem in multi-agent systems is responsibility
 
-When people hear "multi-agent," they often react as if they were hearing a corporate headcount plan and immediately imagine higher efficiency. But the truly difficult part is never the mere presence of more agents. It is how responsibility gets divided.
+Hearing "multi-agent" and jumping to efficiency is like hearing a headcount plan — the truly difficult part is never more agents but how responsibility gets divided. If one system executes, summarizes, verifies, and casually writes its own review, the result is comforting and unreliable: "good job." Claude Code separates explore, execute, synthesis, and verification and treats verify as an independent discipline rather than a polite closing flourish — "done" is not declared by the executing agent alone. Codex walks the same road: `tools/src/lib.rs` exposes `create_spawn_agent_tool_v*`, `create_wait_agent_tool_v*`, `create_send_message_tool`, `create_close_agent_tool_v*` — delegation is formal tool capability, not runtime black magic.
 
-If the same system executes, summarizes, verifies, and casually writes its own review, the result is usually comforting and not especially reliable: good job.
+## 6.2 Claude Code: multi-agent serves runtime separation of responsibility
 
-Claude Code is unusually clear-eyed about this. As the earlier material already showed, it separates explore, execute, synthesis, and verification, and it treats verify as an independent discipline rather than as a polite closing flourish. That matters because it means the system refuses to let "done" be declared solely by the executing agent.
+The mechanism stays centered on the main loop and task progression: the primary agent should not do everything itself, and must not both implement and certify. Multi-agent handles outsourced exploration, split implementation, synthesis, and independent verification. That fits the strength in runtime orchestration — multi-agent enters the governance framework of "how the current task moves forward," rather than a grand agent platform into which tasks are slotted.
 
-Codex is clearly moving down the same road. The many agent-related tools in `tools/src/lib.rs`, such as `create_spawn_agent_tool_v*`, `create_wait_agent_tool_v*`, `create_send_message_tool`, and `create_close_agent_tool_v*`, show that delegation in Codex is formal tool capability rather than runtime black magic.
+## 6.3 Codex: multi-agent serves explicit tool-mediated collaboration
 
-## 6.2 Claude Code: multi-agent work serves runtime separation of responsibility
-
-Claude Code's multi-agent mechanism remains centered on the main loop and task progression. It is close to saying: the primary agent should not do everything itself, and it definitely should not both implement and certify the implementation.
-
-So multi-agent work is primarily used to handle:
-
-- outsourced exploration tasks
-- split implementation tasks
-- synthesis of results
-- independent verification
-
-This architecture fits its overall temperament. Claude Code's strength already lies in runtime orchestration, so multi-agent naturally becomes part of the governance framework for getting the current task forward. It did not begin with a grand agent platform and then insert tasks into it. It began with field-dispatch problems and developed agent partitioning from there.
-
-## 6.3 Codex: multi-agent work serves explicit tool-mediated collaboration
-
-In Codex, delegation is more visibly defined as tool interface. That pushes multi-agent closer to the status of a formal subsystem.
-
-That has two direct effects.
-
-First, delegation actions become easier to record, audit, and compose, because they are explicit tool calls rather than hidden runtime maneuvers.
-
-Second, collaboration aligns more naturally with threads, state, and approval systems. Since Codex already treats thread, rollout, and policy as first-class infrastructure, multi-agent work slips into that same infrastructure rather than remaining a local field technique.
-
-That formality is not abstract. In `agent_tool.rs`, `spawn_agent`, `send_input`, `wait_agent`, and `close_agent` each have their own schemas; `send_input` distinguishes `interrupt=true` from default queued delivery; `wait_agent` is parameterized with default, minimum, and maximum timeout ranges; and `close_agent` explicitly documents closing open descendants as well. So Codex is not merely offering "ask another agent for help." It is turning preemption, waiting, and cleanup into protocol fields.
-
-This is a strong foundation for treating multi-agent behavior as platform capability. It may not always feel as nimble, but it is easier to maintain durably.
+Delegation is defined as tool interface, pushing multi-agent toward a formal subsystem. Two effects: delegation becomes easier to record, audit, and compose because it is an explicit tool call, not hidden runtime maneuvering; collaboration aligns with threads, state, and approval systems, inheriting the first-class infrastructure Codex already built. In `agent_tool.rs`, `spawn_agent`, `send_input`, `wait_agent`, and `close_agent` each have their own schemas: `send_input` distinguishes `interrupt=true` from default queued delivery; `wait_agent` is parameterized with default/min/max timeouts; `close_agent` explicitly closes open descendants. Codex turns preemption, waiting, and cleanup into protocol fields — a strong foundation for platform capability, not always nimble but durable.
 
 ## 6.4 Persistent state keeps verification from becoming etiquette
 
-Verification so often turns ceremonial for one major reason: the system lacks a good enough state handoff. What was just done, why it was done, which tools were used, and which files were touched all matter. If that information lives only in the executing agent's head, the verification phase turns into a performance that looks serious but is starved of material.
-
-Claude Code addresses this by keeping session state, tool results, and recovery branches continuously visible inside runtime, then pairing that continuity with an independent verification discipline to reduce self-flattery.
-
-Codex is more likely to provide explicit material foundations for verification through thread, rollout, message history, and state DB bridge structures. A system with session-archive awareness is simply better at answering, "What exactly happened just now?"
-
-That means the two systems are not in conflict on verification. They repair different deficits:
-
-- Claude Code repairs the problem of an executor becoming too immersed in the live scene
-- Codex repairs the problem that collaboration must leave structured evidence
+Verification turns ceremonial mainly because state handoff is weak. What was done, why, which tools, which files — if that only lives in the executor's head, verification becomes serious-looking theater without material. Claude Code keeps session state, tool results, and recovery branches continuously visible inside runtime, then pairs that continuity with an independent verification discipline. Codex provides explicit material via thread, rollout, message history, and state DB bridge — a system with session-archive awareness is simply better at answering "what exactly happened just now." The two are not in conflict: Claude Code repairs executors too immersed in the scene; Codex repairs collaboration that must leave structured evidence.
 
 ## 6.5 Different attitudes toward recovery and closure
 
-Multi-agent systems face another practical question: how do they close things out?
+Claude Code cares deeply about task cleanup, parent-child abort propagation, and subagent lifecycle hooks — in its world multi-agent work is first a live runtime phenomenon that must close down quickly when the scene goes wrong. Codex leans the other way, bringing agent lifecycle under explicit state management and invocation protocol: it cares not only whether a subagent died, but how that delegated act should persist as a system event. One resembles a site chief worrying about holes left behind; the other resembles an organizer with project infrastructure worrying whether every collaboration act entered the record.
 
-A great many details in Claude Code show that it cares deeply about task cleanup, parent-child abort propagation, subagent lifecycle hooks, and similar concerns. In its world, multi-agent work is first a live runtime phenomenon, and if the live scene goes wrong, the system must be able to close it down quickly.
+### Skeleton: Codex delegation protocol
 
-Codex, judging by toolized agents and thread-state structures, leans more toward bringing agent lifecycle under explicit state management and invocation protocol. It cares not only whether a subagent died, but also how that delegated act should persist as a system event.
+```
+// skeleton: agent_tool.rs spawn/wait/send/close
+handle = spawn_agent { role, prompt, timeout, inherit_approval }
+for msg in updates:
+    send_input(handle, msg, interrupt ∈ {true, false})  // true=preempt, false=queue
+result = wait_agent(handle, timeout ∈ [min, default, max])
+close_agent(handle, cascade=true)                        // closes open descendants too
+```
 
-Again, the difference is temperamental:
+### Orphan and timeout failure matrix
 
-- Claude Code resembles a chief engineer on site, worrying about what holes remain after people leave
-- Codex resembles an organizer with project infrastructure, worrying whether every collaboration act entered the record system
+| Event order | Pre-state | Trigger | Next | Threshold |
+|---|---|---|---|---|
+| parent abort | child in flight | parent.abort | cascade abort to handle; write rollout event | — |
+| `wait_agent` timeout | child unreturned | timeout ≥ max | close handle, return timeout result | `wait_agent.max` |
+| `send_input(interrupt=true)` | child queued | preemption | drop queue, inject new input | — |
+| `close_agent` | open descendants | explicit close | cascade-close all descendants | `cascade=true` |
+| child crash | — | abnormal exit | return error, keep thread record | — |
+| handle leak | task ends without close | finalize | force close + evict | no dangling handles |
 
 ## 6.6 Chapter conclusion
 

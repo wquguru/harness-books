@@ -2,66 +2,45 @@
 
 ## 6.1 多代理的真正问题是责任
 
-很多人一听多代理，就像听到公司要扩编，立刻想到效率提升。其实真正棘手的，从来都是多出来的责任怎么切，而不只是多几个代理。
-
-如果同一个系统既负责执行，又负责总结，又负责验证，还顺手负责给自己写评语，那最后通常会得出一个令人宽慰但不太可靠的结论：干得不错。
-
-Claude Code 在这方面相当清醒。前一套内容里已经分析过，它会把 explore、execute、synthesis、verification 拆开，并且把 verify 做成一种独立纪律，而非礼貌性的结尾动作。这件事很重要，因为它说明系统不愿让“完成”只由执行代理自己宣布。
-
-Codex 也明显走在这条路上。`tools/src/lib.rs` 中大量 agent 相关工具，比如 `create_spawn_agent_tool_v*`、`create_wait_agent_tool_v*`、`create_send_message_tool`、`create_close_agent_tool_v*`，说明代理委派在 Codex 里是正式工具能力，而不是什么黑魔法。
+一听多代理就想到效率提升，像听公司扩编——其实真正棘手的从来是多出来的责任怎么切。若同一系统既执行又总结又验证，还顺手给自己写评语，结论多半令人宽慰但不可靠："干得不错"。Claude Code 清醒地把 explore、execute、synthesis、verification 拆开，verify 是独立纪律而非礼貌动作——系统不愿让"完成"由执行代理自己宣布。Codex 也走这条路：`tools/src/lib.rs` 里 `create_spawn_agent_tool_v*`、`create_wait_agent_tool_v*`、`create_send_message_tool`、`create_close_agent_tool_v*` 说明委派是正式工具能力，不是黑魔法。
 
 ## 6.2 Claude Code：多代理服务于运行时职责分区
 
-Claude Code 的多代理机制，整体上还是围绕主循环和任务推进展开。它更接近在说：主代理不该什么都自己干，尤其不该既干活又验收。
-
-因此它把多代理主要用来处理：
-
-- 探索型任务外包
-- 执行型任务分流
-- synthesis 汇总
-- verification 独立复核
-
-这种架构非常符合它的整体气质。因为 Claude Code 的强项本来就在运行时编排，所以多代理也自然被纳入“当前这轮任务怎么往前推进”的治理框架里。换句话说，它并不是先有一个宏大的 agent platform，再往里塞任务；它是先有现场调度问题，再发展出代理分工。
+Claude Code 的多代理围绕主循环和任务推进展开——主代理不该什么都自己干，尤其不该既干活又验收。因此多代理主要用于：探索外包、执行分流、synthesis 汇总、verification 独立复核。这很符合它的强项在运行时编排——多代理被纳入"当前这轮怎么推进"的治理框架，而不是先有 agent platform 再往里塞任务。
 
 ## 6.3 Codex：多代理服务于显式工具化协作
 
-Codex 的代理委派则更明显地被定义成工具接口。这种写法会让多代理更接近一个正式子系统。
-
-这带来两个影响。
-
-第一，委派动作更容易被记录、审计和组合。因为它是显式工具调用，而不是某段内部 runtime 魔法。
-
-第二，代理协作更容易与线程、状态和审批体系对齐。既然 Codex 本来就很重视 thread、rollout 和 policy，那么多代理也自然更适合进入这套基础设施，而不只是临时现场技巧。
-
-这里的“正式”不是泛泛而谈。`agent_tool.rs` 里，`spawn_agent`、`send_input`、`wait_agent`、`close_agent` 都有单独 schema；`send_input` 明确区分 `interrupt=true` 的立即打断和默认排队；`wait_agent` 甚至有 default/min/max timeout 选项；`close_agent` 还明确写着会连同 open descendants 一起关闭。也就是说，Codex 不是只提供“找个子代理帮忙”这件事，而是把协作中的抢占、等待和收尾都定义成了协议字段。
-
-这种设计很适合把多代理做成平台能力。它不见得更灵巧，但更容易长期维护。
+Codex 把委派定义成工具接口，多代理更像正式子系统。两个直接影响：委派动作更易被记录、审计和组合（显式工具调用，不是 runtime 魔法）；协作更易与线程、状态和审批体系对齐（thread/rollout/policy 本就一等公民）。`agent_tool.rs` 里 `spawn_agent`、`send_input`、`wait_agent`、`close_agent` 各有 schema：`send_input` 区分 `interrupt=true` 立即打断和默认排队；`wait_agent` 有 default/min/max timeout；`close_agent` 连 open descendants 一起关闭——抢占、等待、收尾都是协议字段。适合做成平台能力，不见得更灵巧但更易长期维护。
 
 ## 6.4 持久状态让验证不只是礼仪
 
-验证之所以常常流于形式，一个重要原因是系统没有足够好的状态承接。上一步刚干完什么、为什么这么干、哪些工具动过、哪些文件变过——要是这些信息都只在执行代理脑子里，那验证阶段就很容易沦为一场貌似认真、实则缺材料的表演。
-
-Claude Code 的做法，是尽量让会话状态、工具结果和恢复分支在 runtime 里连续可见，再配合独立验证纪律来降低自我美化。
-
-Codex 的做法，则更可能通过 thread、rollout、message history、state DB bridge 这些结构，为验证提供更清楚的材料基础。一个有会话档案意识的系统，更容易把“刚才到底做了什么”说清楚。
-
-因此二者在验证问题上并非冲突，它们补的是不同缺口：
-
-- Claude Code 补的是执行者过于沉浸现场的问题
-- Codex 补的是系统协作必须留下结构化证据的问题
+验证流于形式的一个主因是系统没有足够好的状态承接——上一步干了什么、为什么、哪些工具动过、哪些文件变过，若只在执行代理脑子里，验证就容易沦为貌似认真实则缺材料的表演。Claude Code 让会话状态、工具结果和恢复分支在 runtime 里连续可见，配合独立验证纪律降低自我美化。Codex 通过 thread、rollout、message history、state DB bridge 给验证提供更清楚的材料基础。二者并不冲突——前者补执行者过于沉浸现场的问题，后者补系统协作必须留下结构化证据的问题。
 
 ## 6.5 对恢复与收尾的不同态度
 
-多代理系统还有一个现实问题：怎么收尾。
+Claude Code 很在乎 task cleanup、父子 abort 传播、subagent lifecycle hook——在它的世界里，多代理首先是运行时现场的一部分，出问题必须能及时收口。Codex 则把代理生命周期纳入显式状态管理和调用协议：不只关心"子代理死没死"，还关心"委派行为作为系统事件该如何留存"。前者像现场总工，担心人散场后地上还留坑；后者像带项目管理系统的组织者，担心每个协作动作是否进入记录体系。
 
-Claude Code 的很多设计细节都说明，它很在乎 task cleanup、父子 abort 传播、subagent lifecycle hook 之类的事情。在它的世界里，多代理首先是运行时现场的一部分，现场出了问题，必须能及时收口。
+### 骨架：Codex 代理委派协议 (skeleton)
 
-Codex 这边，从工具化代理和线程状态结构来看，更偏向于把代理生命周期纳入显式状态管理和调用协议。它不只关心”子代理死没死”，还关心”这个委派行为作为一条系统事件该如何留存”。
+```
+// 骨架: agent_tool.rs spawn/wait/send/close
+handle = spawn_agent { role, prompt, timeout, inherit_approval }
+for msg in updates:
+    send_input(handle, msg, interrupt ∈ {true, false})  // true=立即打断, false=排队
+result = wait_agent(handle, timeout ∈ [min, default, max])
+close_agent(handle, cascade=true)                        // 连同 open descendants 一并关闭
+```
 
-这种区别同样是气质问题：
+### 孤儿与超时故障矩阵
 
-- Claude Code 更接近项目现场的总工，担心人散场以后地上还留着坑
-- Codex 更接近带项目管理系统的组织者，担心每个协作动作有没有进入记录体系
+| 事件顺序 | 前置状态 | 触发 | 下一步 | 阈值 |
+|---|---|---|---|---|
+| 父代理 abort | 子代理在飞 | parent.abort | cascade abort 传到 handle；写 rollout 事件 | — |
+| `wait_agent` 超时 | 子代理未返回 | timeout ≥ max | 关闭 handle，返回 timeout 结果 | `wait_agent.max` |
+| `send_input(interrupt=true)` | 子代理排队中 | 抢占 | 丢弃队列，注入新输入 | — |
+| `close_agent` | 有 open descendants | 显式关闭 | 级联关闭所有后代 | `cascade=true` |
+| 子代理崩溃 | — | 异常退出 | 返回 error，保留 thread 记录 | — |
+| handle 泄漏 | 任务结束未 close | finalize | 强制 close + evict | 不允许悬挂句柄 |
 
 ## 6.6 本章结论
 

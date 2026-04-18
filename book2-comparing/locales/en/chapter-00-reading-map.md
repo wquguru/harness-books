@@ -15,24 +15,9 @@ In other words, you can read them as two sequential steps in one research progra
 
 ## Start with Book One: Nine Structural Judgments from Claude Code
 
-Book One has a stable throughline and can be compressed into nine judgments.
+Book One compresses to nine: a harness first stops the model from damaging engineering environments; prompt is part of the control plane; the query loop is the agent's heartbeat; tools are execution interfaces constrained by approval, orchestration, and interrupt semantics; more context is not always better, memory / `CLAUDE.md` / compact are budget-governance mechanisms; errors belong on the main path, recovery is first-class; multi-agent value is role partitioning plus independent verification; team rollout must crystallize rules into reusable institutions; together these become a stable Harness Engineering principle checklist.
 
-1. The first duty of a harness is to stop the model from damaging engineering environments; capability amplification usually sits on top of that.
-2. In an agent system, prompt is better understood as part of the control plane, while still carrying some material that older systems would have treated as persona copy.
-3. The query loop is the heartbeat of an agent; the core question is how one turn connects to the next.
-4. Tools are more than a capability list; they are execution interfaces constrained by approval, orchestration, and interrupt semantics.
-5. More context is not always better; memory, `CLAUDE.md`, and compact are budget-governance mechanisms.
-6. Errors should not be treated as edge material; recovery paths work better when designed as first-class paths.
-7. Multi-agent value mainly comes from role partitioning and independent verification; the appearance of duplication is secondary.
-8. Team rollout cannot depend on individual tricks; rules must crystallize into reusable institutions.
-9. These insights can eventually become a reasonably stable Harness Engineering principle checklist.
-
-If you read only Book One, you get a strong impression: Claude Code's systemic character is runtime governance. It first cares about:
-
-- how the session keeps running,
-- how tools avoid trouble,
-- how recovery avoids dead loops,
-- and how verification avoids ritualism.
+Reading only Book One leaves one strong impression: Claude Code's character is runtime governance — it cares first about how the session keeps running, how tools avoid trouble, how recovery avoids dead loops, and how verification avoids ritualism.
 
 ## Then Read This Comparison Book: Same Problem, Different Starting Points
 

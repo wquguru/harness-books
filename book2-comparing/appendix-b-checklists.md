@@ -2,60 +2,53 @@
 
 比较如果不能落成检查清单，最后很容易只剩一些表述完整却难落地的判断。下面这份附录，就是把前面几章压成团队可直接讨论的清单。
 
-## B.1 控制面清单
+## B.1 控制面清单 (invariants)
 
-检查这些问题：
+```
+assert every instruction has {source, type, precedence}        # fragment 可识别
+assert prompt 中 control-plane 与 output-style 明确区分         # 文风不等于秩序
+assert 本地规则的作用域（CLAUDE.md / AGENTS.md）显式标注
+assert team 规则变更可通过 diff 追踪                           # 非口头约定
+```
+答不清这些，说明控制面还停留在"能用就行"。
 
-- 本地规则是作为自由文本拼装，还是作为带类型边界的 fragment 注入
-- instruction 的来源、作用域和优先级能否说清楚
-- prompt 中哪些部分是真控制面，哪些只是输出风格
-- 团队规则更像 `CLAUDE.md` 这类现场说明，还是更像 `AGENTS.md` 这类结构化制度入口
+## B.2 连续性清单 (invariants)
 
-如果这些问题答不清，说明你的控制面还停留在“能用就行”的阶段。
+```
+assert 连续性主权 ∈ {main loop, thread+rollout+state}          # 明确归属
+assert 中断 ⇒ tool_result 同步闭账（synthetic 兜底也算）
+assert 长会话有 compact / truncation / recovery 三件套
+assert thread.id / 会话索引 / 状态落地为系统一等概念
+```
+长会话若主要靠模型自己"记得住"，基本不必再看。
 
-## B.2 连续性清单
+## B.3 工具与审批清单 (invariants)
 
-检查这些问题：
+```
+assert tool = schema 化接口，additional_properties=false
+assert approval policy 可独立评估（不混在代码 if/else 里）
+assert 危险工具（Bash 等）有专门治理                           # 非一视同仁
+assert {workdir, network, sandbox, approval} 可显式表达
+```
+系统只能回答"我们也有权限控制"，基本等于没设计权限。
 
-- 系统的连续性主要由主循环维持，还是由 thread / rollout / state 维持
-- 中断以后，谁来保证工具账本、消息序列和状态收口
-- 长会话膨胀时，是否存在明确 compact / truncation / recovery 机制
-- 线程 ID、会话索引和状态落地是否是系统一等概念
+## B.4 本地治理清单 (invariants)
 
-如果长会话主要靠模型自己“记得住”，那基本不用再往下看了。
+```
+assert 本地规则可按 {目录, 团队, 任务类型} 分层
+assert skill 视为可复用制度切片，非长 prompt                   # 有版本/来源
+assert hook 挂在明确生命周期事件（pre/post/session_start/stop）
+assert {skill, rule, hook} 具备 {version, source, trigger boundary}
+```
 
-## B.3 工具与审批清单
+## B.5 多代理与验证清单 (invariants)
 
-检查这些问题：
-
-- 工具是运行时对象，还是 schema 化接口
-- 审批主要靠现场判断，还是有显式 policy / rule 体系
-- 危险工具是否有专门治理，而不是与普通读操作一视同仁
-- `workdir`、network、sandbox、approval 等执行边界能否被显式表达
-
-如果系统只能回答“我们也有权限控制”，那通常等于还没有真正设计权限控制。
-
-## B.4 本地治理清单
-
-检查这些问题：
-
-- 本地规则能否按目录、团队、任务类型分层
-- skills 是不是可以被视为可复用制度切片，而不只是长 prompt
-- hooks 是否挂在明确生命周期事件上
-- skill / rule / hook 是否有版本、来源和触发边界
-
-团队治理如果主要依赖口头说明，系统迟早会学会装懂。
-
-## B.5 多代理与验证清单
-
-检查这些问题：
-
-- 多代理是为了并行，还是为了职责分离
-- 是否存在独立 verification 机制
-- 代理委派是否是显式工具或显式状态事件
-- 子代理失败、超时、取消以后，谁负责清理
-
-一个不能独立验证、不能明确收尾的多代理系统，通常只是把混乱并行化。
+```
+assert 多代理的第一目的是职责分离，并行是附带           # 否则是把混乱并行化
+assert 存在独立 verifier（verifier ≠ implementer）
+assert 委派为显式工具或显式状态事件，非 runtime 魔法
+assert 子代理 {failure, timeout, cancel} ⇒ 明确 cleanup owner
+```
 
 ## B.6 你更像哪一类系统
 
@@ -90,3 +83,22 @@
 - 出事以后，团队靠什么追溯
 
 这六句问下来，系统大概属于哪一派，通常也就露出来了。
+
+## B.8 阈值与顺序速查 (thresholds & orderings)
+
+| 名称 | 值 | 作用 | 源引用 |
+|---|---|---|---|
+| `MAX_ENTRYPOINT_LINES` | 200 | 入口文件行数上限 | 书一 ch5 / `memdir/memdir.ts` |
+| `MAX_SECTION_LENGTH` | 2_000 | session memory 单节上限 | `SessionMemory/prompts.ts` |
+| `MAX_TOTAL_SESSION_MEMORY_TOKENS` | 12_000 | 会话记忆总预算 | `SessionMemory/prompts.ts` |
+| `AUTOCOMPACT_BUFFER_TOKENS` | 13_000 | autocompact 警戒缓冲 | `compact/autoCompact.ts` |
+| `MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES` | 3 | 熔断阈值 | `compact/autoCompact.ts` |
+| `yield_time_ms` | per-tool | 单次 exec 阻塞毫秒上限 | `local_tool.rs` |
+| `wait_agent.timeout` | min/default/max | 子代理等待窗口 | `agent_tool.rs` |
+| Bash 子命令数 cap | implicit | 复合子命令上限 | `bashPermissions.ts` |
+
+事件顺序速查：
+
+- session_start → user_prompt_submit → pre_tool_use → tool exec → post_tool_use → stop
+- spawn_agent → send_input* → wait_agent → close_agent（cascade 关闭后代）
+- PTL → collapse → reactive compact → 若仍 PTL 则 surface 错误（不再循环）

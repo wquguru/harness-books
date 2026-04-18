@@ -2,13 +2,7 @@
 
 ## 8.1 The real use of comparison is to avoid unnecessary detours
 
-The least interesting ending for a comparison book is to push the reader back into a consumer posture: choose A or B. Engineering systems are not headphones. You do not buy them through ranking charts. The useful question is this: if you are about to build your own harness, or refactor the agent you already have, whose lessons should you learn first, and which part should you learn first?
-
-Claude Code and Codex offer two opening moves, not two final answers.
-
-Claude Code is useful because it warns you not to make runtime problems sound too elegant. What actually drags systems down are often the dirty jobs inside the query loop: closing tool-result ledgers, managing context inflation, recovering from interrupts, cleaning up subagents, keeping verification independent, and preventing failure handling from becoming a loop. Anyone who treats those problems lightly usually ends up with a system that looks smart and feels lethal to operate.
-
-Codex is useful because it warns you not to let the control layer dissolve into tacit understanding. Instruction sources, tool schemas, approval policy, thread state, hook events, and skill assets become easier to govern the earlier they are made explicit. Teams that keep asking runtime improvisation to replace institution eventually discover that the whole system resembles a shed built out of verbal agreement.
+The least interesting ending is the consumerist one — choose A or B. Engineering systems are not headphones and do not ship through ranking charts. The useful question is: if you are about to build your own harness or refactor an existing agent, whose lessons should you learn first, and which part first. Claude Code and Codex offer two opening moves, not two final answers. Claude Code warns you not to make runtime problems sound too elegant — what drags systems down are the dirty jobs inside the query loop (closing tool-result ledgers, managing context inflation, recovering from interrupts, cleaning up subagents, keeping verification independent, preventing failure handling from looping on itself); treating those problems lightly gives a system that looks smart and feels lethal to operate. Codex warns you not to let the control layer dissolve into tacit understanding — instruction sources, tool schemas, approval policy, thread state, hook events, and skill assets become easier to govern the earlier they are made explicit; teams that keep asking runtime improvisation to replace institution eventually find their system resembles a shed built out of verbal agreement.
 
 ## 8.2 Three common team shapes, three opening directions
 
@@ -55,76 +49,51 @@ If your first-phase risk is mainly "the team will lose institutional order," sta
 
 The worst move is trying to learn both sides fully at the same time and ending up with neither a stable main loop nor a clear control plane.
 
+### Staged builder checklists for the three team shapes
+
+```
+# Type one: prototype exists, long sessions lose control (learn Claude Code first)
+- [ ] Week 1: name the loop state set {messages, toolUseContext, compactTracking, turnCount}
+- [ ] Week 1: every tool_use closed or synthetic-filled; abort path wired
+- [ ] Week 2: context governance trio — memory / collapse / autocompact thresholds frozen in table
+- [ ] Week 2: verification independent of implementation (verifier ≠ implementer)
+- [ ] Week 3: subagent lifecycle SubagentStart/Stop observable
+Gate: 24h continuous session without token breaker, orphan subagents, or tool_result leaks
+
+# Type two: rules multiply, sources scattered, boundaries unclear (learn Codex first)
+- [ ] Week 1: all instructions become fragments — marker, source, precedence all three declared
+- [ ] Week 1: tools schema-typed with additional_properties=false
+- [ ] Week 2: approval policy lifted into rules — deny/ask/allow independently evaluable
+- [ ] Week 2: thread.id / rollout established; turn-level {approvalPolicy, sandboxMode} explicit
+- [ ] Week 3: hooks split into pre/post/session_start/stop; skill assets installed by fingerprint
+Gate: any rule change lands via PR diff alone, no runtime code edits required
+
+# Type three: starting from scratch (pick one primary contradiction first)
+- [ ] Week 1: declare primary contradiction — "model runs wild" or "team loses order"
+- [ ] Week 1: define minimum permission model (deny/ask list for high-risk actions)
+- [ ] Week 2: stand up skeleton on the primary side (loop OR fragment+thread, pick one)
+- [ ] Week 3: bring the other side up to minimum-viable only (recovery path OR basic hooks)
+- [ ] Week 4: land 1–2 skills/tools; prove the loop closes end to end
+Gate: a new member can advance the checklist without verbal tutoring from the original author
+```
+
 ## 8.3 What to learn from Claude Code, and what to learn from Codex
 
-This is worth stating more bluntly.
+Prioritize Claude Code on: the state mind-set of the query loop, compaction and context governance, tool orchestration and interrupt handling, subagent lifecycle and verification independence, treating failure paths as main paths. Prioritize Codex on: instruction fragmentation, tool schemas, explicit expression of approval and policy, infrastructure for thread / rollout / state, hook events and skill-asset management. This is not compromise — it assumes you know what you are learning. The right reason to borrow something is that it repairs your weakness, not that someone else already built it.
 
-Prioritize learning from Claude Code when it comes to:
+<p>Carry the context-governance judgments from the first volume into third-party harnesses and a common but costly route becomes easy to identify. It does not separate context into units with different lifetimes, duties, and entry costs. Instead it packs bootstrap files, skill descriptions, identity settings, and workspace text into prompt as far as possible, then leans on truncation, compaction, and recovery chains once the window gets tight. These systems may still have memory, skills, compaction, even upper bounds — the governing axis remains "inject first, rescue later." Once context is organized mainly by piling up text, token waste is only the first cost; signal dilution is the deeper one: the model sees more, but is not necessarily clearer about which working semantics matter next.</p>
 
-- the state mind-set of the query loop
-- compaction and context governance
-- tool orchestration and interrupt handling
-- subagent lifecycle and verification independence
-- treating failure paths as main paths
-
-Prioritize learning from Codex when it comes to:
-
-- instruction fragmentation
-- tool schemas
-- explicit expression of approval and policy
-- infrastructure for thread / rollout / state
-- hook events and skill-asset management
-
-This is not compromise for its own sake. It contains a hidden requirement: you must know what you are learning and why. The correct reason to borrow something is that it repairs your weakness, not merely that someone else already built it.
-
-<p>If you carry the context-governance judgments from the first volume into third-party harnesses, you can identify a common but costly route much more easily. It does not begin by separating context into units with different lifetimes, duties, and entry costs. Instead it tries to pack bootstrap files, skill descriptions, identity settings, and workspace text into prompt as far as possible, then leans on truncation, compaction, and recovery chains once the window gets tight.</p>
-
-<p>Systems on this route may still have memory, skills, and compaction, and they may even impose upper bounds. But the governing axis remains "inject first, rescue later." That is the real problem. Once context is organized mainly by piling up text, token waste is only the first cost. The deeper cost is signal dilution: the model sees more things, but is not necessarily clearer about which working semantics matter for the next action.</p>
-
-<p>If you wanted a one-sentence summary of the three routes, it would look like this:</p>
-
-<ul>
-  <li>Claude Code treats context more like working memory, first deciding what must survive and what should be compressed.</li>
-  <li>Codex treats context more like structured units, first deciding source type, scope, and state handoff.</li>
-  <li>Systems in the OpenClaw family treat context more like a prompt container, first deciding what else can still be packed in before the limit.</li>
-</ul>
-
-<p>That is why teams often begin by feeling that these systems are "more informed," then later complain about two things at once: tokens are burned quickly, and the quality does not become steadily better as context gets fatter. The system is solving how much can be inserted, not what must be preserved for continued work.</p>
+<p>Three routes in one line: Claude Code treats context as working memory (what must survive, what should be compressed); Codex treats context as structured units (source type, scope, state handoff); the OpenClaw family treats context as a prompt container (what else can still be packed in before the limit). That is why teams on the third route feel "more informed" at first, then complain about two things at once — tokens burn fast and quality does not climb as context fattens. It is solving how much can be inserted, not what must be preserved for continued work.</p>
 
 <p><img src="diagrams/diag-05-context-governance-three-paths.png" alt="Three-path comparison of context governance" /></p>
 
 ## 8.4 One dangerous misconception: explicitness and flexibility are not natural enemies
 
-System builders often rely on a lazy false opposition.
-
-Say "explicit control layer" and they imagine a system that must become heavy, slow, and rigid.
-
-Say "runtime flexibility" and they imagine experience can carry the system now while structure is deferred to later.
-
-Neither instinct is very intelligent. Explicitness is not inherently rigid, and flexibility is not inherently chaotic. The real question is whether you have defined clearly which things must be explicit and which things can be left to field judgment.
-
-Claude Code's strength is not that it rejects structure. Its strength is that it knows which troubles must be faced directly inside runtime.
-
-Codex's strength is not that it rejects flexibility. Its strength is that it knows which boundaries will turn into endless disputes if they are not declared early.
-
-A good third harness should not average the two. It should distinguish:
-
-- which rules must be written down first
-- which judgments can remain in runtime
-- which state must persist
-- which experience only needs to be retained temporarily inside session memory
+System builders often rely on a lazy false opposition. Say "explicit control layer" and they imagine a heavy, slow, rigid system; say "runtime flexibility" and they imagine experience can carry the system now while structure is deferred. Neither instinct is intelligent. Explicitness is not inherently rigid, and flexibility is not inherently chaotic. The real question is whether you have defined clearly which things must be explicit and which can be left to field judgment. Claude Code's strength is not rejecting structure but knowing which troubles must be faced inside runtime; Codex's strength is not rejecting flexibility but knowing which boundaries will turn into endless disputes if not declared early. A good third harness does not average the two — it distinguishes which rules must be written down first, which judgments can remain in runtime, which state must persist, and which experience only needs to live inside session memory.
 
 ## 8.5 A practical order of operations for later builders
 
-If I were starting a harness from zero, I would recommend this sequence:
-
-1. define high-risk actions and the minimum permission model
-2. define the main loop or thread lifecycle
-3. define context governance and recovery paths
-4. define skills, local rules, and hooks
-5. only then scale into multi-agent, platform capability, and a more complex ecosystem
-
-This sequence is not glamorous, but it roughly follows the order in which incidents appear. In engineering, many design orders should be arranged according to the order of failure, not according to what looks nicest in a demo.
+From zero, the recommended sequence: (1) high-risk actions and the minimum permission model; (2) main loop or thread lifecycle; (3) context governance and recovery paths; (4) skills, local rules, and hooks; (5) multi-agent, platform capability, and complex ecosystem. Not glamorous, but roughly the order in which incidents appear. In engineering, many design orders should follow the order of failure, not the order of demo aesthetics.
 
 ## 8.6 Chapter conclusion
 

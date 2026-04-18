@@ -4,96 +4,67 @@
 
 ## 4.1 The truly dangerous moment is the start of execution
 
-When a model says the wrong thing, the usual cost is wasted time. When it runs the wrong command, it can take the directory, repository, processes, and workflow down with it. So what truly distinguishes AI coding systems is who owns the final interpretive authority before a tool starts acting.
+A model saying the wrong thing wastes time; running the wrong command takes the directory, repository, processes, and workflow down with it. What distinguishes AI coding systems is who owns the final interpretive authority before a tool acts. Both Claude Code and Codex take this seriously in different ways. Claude Code pulls tools into runtime scheduling discipline — `toolOrchestration.ts`, `toolExecution.ts`, `StreamingToolExecutor.ts`, `useCanUseTool.tsx`, Bash-specific prompts, explicit allow/deny/ask semantics — deciding whether a call may run, how, whether concurrently, whether the user rejected, how to interrupt, and how results return to context. Codex turns tools into typed interfaces first — `tools/src/lib.rs` exports tool constructors, `local_tool.rs` defines schemas for `exec_command`, `shell`, `shell_command`, `request_permissions`. Tools in Codex are first a normalized API, only secondarily an execution unit.
 
-Both Claude Code and Codex take this seriously, but they take it seriously in different ways.
+## 4.2 Claude Code: runtime orchestration and dangerous-action constraints
 
-Claude Code is closer to pulling tools into runtime scheduling discipline. It has `toolOrchestration.ts`, `toolExecution.ts`, `StreamingToolExecutor.ts`, `useCanUseTool.tsx`, Bash-specific prompts, and explicit `allow / deny / ask` semantics. It cares about whether this tool call may run, how it runs, whether it can run concurrently, whether the user has rejected it, how interruption works midway through execution, and how the result returns to context.
-
-Codex instead starts by turning tools into typed interfaces. `tools/src/lib.rs` exports a whole set of tool constructors, while `local_tool.rs` defines schema-based structures for things like `exec_command`, `shell`, `shell_command`, and `request_permissions`. In Codex, tools are first a normalized API surface and only secondarily an execution unit.
-
-## 4.2 Claude Code: runtime orchestration and constraints on dangerous action
-
-Claude Code's tool system has a strong feel of field dispatch. Concurrency depends on schema and `isConcurrencySafe()`. Context modifications have to preserve replay order. Streaming tool execution must consider interruptions, synthetic results, and UI feedback.
-
-What feels most like real engineering is that the system admits tool invocation is a process with consequences, not a single point action. In that sense, Claude Code's harness resembles a site supervisor attached to the model. Workers may work, but the supervisor must keep watching:
-
-- which tool goes first
-- which calls can be parallelized
-- which must remain serial
-- how results are accounted for
-- what to do if work is halted halfway
-
-Bash, especially, is treated with a near-obsessive explicitness. That may sound fussy, but mature systems are usually fussy around the most dangerous interface. Anyone who still approaches shell with youthful swagger probably has not accumulated enough incident memory yet.
+The tool system has a strong field-dispatch feel: concurrency depends on schema and `isConcurrencySafe()`, context modifications preserve replay order, streaming execution must handle interrupts, synthetic results, and UI feedback. Tool invocation is treated as a process with consequences, not a single point action — the harness resembles a site supervisor attached to the model, watching which tool goes first, which can be parallelized, which must serialize, how results are accounted for, and what happens when work is halted halfway. Bash is treated with near-obsessive explicitness — mature systems are usually fussy around the most dangerous interface.
 
 ## 4.3 Codex: tool schemas, approval parameters, and a policy engine
 
-Codex is closer to expressing control over risky actions as formal interface constraints.
-
-Take `local_tool.rs`. A tool such as `exec_command` explicitly owns fields like:
-
-- `cmd`
-- `workdir`
-- `shell`
-- `tty`
-- `yield_time_ms`
-- `max_output_tokens`
-- `login`
-- approval-related parameters
-
-And `shell` / `shell_command` descriptions explicitly require `workdir`, warning against careless `cd` habits. This reveals an important design belief: Codex does not settle for "the runtime should quietly do the right thing." It wants correct usage patterns encoded in the tool definition itself.
-
-More than that, approvals and escalation are modeled as explicit parameters, `request_permissions` exists as a separate tool, and `execpolicy` is implemented as its own crate. That language already goes beyond simple permission gates into an actual policy layer:
-
-- `Policy`
-- `Rule`
-- `Evaluation`
-- `Decision`
-- parser
-
-These names are practically announcing that execution boundaries have become a small policy language rather than a handful of `if / else` checks.
-
-And that policy language is not rhetorical. In `local_tool.rs`, tool schemas explicitly mark required fields and disable stray properties with `additional_properties = false`, which narrows the room for the model to invent parameters. The descriptions for `shell` and `shell_command` even spell out that `workdir` should be set and `cd` should be avoided unless necessary. Meanwhile `execpolicy/src/lib.rs` exports not just a parser and `PolicyParser`, but also helpers such as `blocking_append_allow_prefix_rule` and `blocking_append_network_rule`. Codex is prepared not only to evaluate policy, but to amend it in structured ways.
+Codex expresses control over risky actions as formal interface constraints. In `local_tool.rs`, `exec_command` explicitly owns fields — `cmd`, `workdir`, `shell`, `tty`, `yield_time_ms`, `max_output_tokens`, `login`, approval-related parameters — rather than accepting a single string command. `shell` / `shell_command` descriptions require `workdir` and warn against careless `cd`. Correct usage is encoded in the tool definition itself. Approvals and escalation are explicit parameters, `request_permissions` is a separate tool, and `execpolicy` is its own crate — `Policy`, `Rule`, `Evaluation`, `Decision`, parser — execution boundaries have become a small policy language rather than a handful of `if / else` checks. And it is not rhetorical: schemas mark required fields and disable stray properties via `additional_properties = false`; `execpolicy/src/lib.rs` exports parser, `PolicyParser`, plus helpers like `blocking_append_allow_prefix_rule` and `blocking_append_network_rule`. Codex evaluates policy and also amends it in structured ways.
 
 ## 4.4 Runtime approvals versus policy language
 
-The split between Claude Code and Codex around tool risk can be compressed like this:
+Claude Code leans toward a runtime approval chain; Codex leans toward explicit policy language and parameterized approvals. Claude Code's ask/allow/deny is tightly coupled to the call site, deciding by context, tool type, user action, and session state — sensitive, but rules stay buried in runtime logic. Codex's exec-policy pulls rules outward as separately parsable and evaluable entities — better readable and portable, a natural fit for team governance; the cost is weight and real ongoing design work. Bluntly: shift manager making the call on site vs. a company that writes policy first and checks compliance second.
 
-- Claude Code leans toward a runtime approval chain
-- Codex leans toward explicit policy language and parameterized approvals
+### Skeleton: two risk gates
 
-Claude Code's `ask / allow / deny` logic is tightly coupled to the scene of the tool call. The system can decide according to current context, tool type, user action, and session state. Its strength is sensitivity; its weakness is that rules can remain buried inside runtime logic.
+```
+// skeleton: Claude Code runtime approval  (src: src/hooks/useCanUseTool.tsx, StreamingToolExecutor.ts)
+decision = hasPermissionsToUseTool(tool, input, ctx)  // allow | deny | ask
+match decision:
+    allow: schedule_with_concurrency_check(tool)       // isConcurrencySafe()
+    deny:  reject(reason)                              // sticky
+    ask:   route_to(coordinator | swarm | interactive)
+interrupt_semantics = tool.interruptBehavior ∈ {cancel, block}
 
-Codex's exec-policy approach tries to pull rules outward and make them separately parsable and separately evaluable. The strength is better readability and portability of rules, and a much more natural fit for team-level governance. The cost is weight: the system feels heavier, and policy design must be treated as real design work rather than as commentary.
+// skeleton: Codex exec-policy evaluation  (src: execpolicy/src/lib.rs, local_tool.rs)
+policy = PolicyParser.parse(source)
+for rule in policy.rules:
+    eval = rule.evaluate(exec_command { cmd, workdir, shell, tty,
+                                         yield_time_ms, max_output_tokens, login })
+    if eval.matches: return Decision::{Allow | Deny | RequestPermissions}
+return Decision::default
+```
 
-Put bluntly:
+### Approval decision tree
 
-Claude Code is closer to a shift manager making the call on site.
+```
+tool_call
+  ├─ schema validation fails    → deny (additional_properties=false blocks stray args)
+  ├─ matches deny rule (prefix) → deny
+  ├─ matches ask rule (net/esc) → request_permissions (explicit tool)
+  ├─ no match + sandbox relaxed → allow (bounded by workdir / sandbox mode)
+  └─ no match + sandbox strict  → ask
+```
 
-Codex is closer to a company that writes the policy first and then checks whether the action is compliant.
+### Timeout and parameter thresholds
 
-## 4.5 Sandbox and approval are not merely security features
+| Name | Purpose | Source |
+|---|---|---|
+| `yield_time_ms` | max ms a single exec may block | `local_tool.rs (exec_command)` |
+| `max_output_tokens` | cap on tool output admitted into context | `local_tool.rs` |
+| `additional_properties=false` | blocks model from injecting stray args | `local_tool.rs (schema)` |
+| Bash subcommand cap | max compound subcommands per Bash call | `bashPermissions.ts` |
 
-Many teams treat sandboxing, approvals, and permissions as security accessories. That is too light. In a coding agent, these things define what the product actually is.
+## 4.5 Sandbox and approval define the product
 
-If the system lets the model run arbitrary commands directly in a user directory, it is not simply "more powerful." It is an agent that transfers risk to the user. Conversely, if a system can explicitly express sandbox mode, network access, approval policy, additional directories, state-store location, and MCP tool approvals, then it is offering not just capability but behavioral boundaries.
-
-Codex exposes these turn-level conditions in `thread.ts`, which shows it treats them as part of thread semantics rather than as hidden implementation detail. Claude Code instead pushes the boundary into runtime execution through tool handling, interrupts, permission hooks, and Bash restrictions.
-
-That means the two systems differ at the level of product philosophy too:
-
-- Claude Code is closer to "execute while being watched"
-- Codex is closer to "declare the execution contract before starting"
+Sandbox, approval, and permission are not security accessories — for a coding agent they define what the product is. A system that lets the model run arbitrary commands in a user directory is an agent that transfers risk to the user, not just a "more powerful" one. Explicitly expressing sandbox mode, network access, approval policy, additional directories, state-store location, and MCP tool approvals is what delivers capability plus behavioral boundaries. Codex exposes these turn-level conditions in `thread.ts` as part of thread semantics; Claude Code pushes the boundary into runtime — tool handling, interrupts, permission hooks, Bash restrictions. One "executes while being watched," the other "declares the execution contract before starting."
 
 ## 4.6 MCP, external tools, and boundary migration
 
-Both systems can attach more capabilities, but their differences remain.
-
-Claude Code is closer to building a situational governance chain out of skill, hook, permission, and tool prompt. Its strength is getting local rules into the main loop together with the task.
-
-Codex is more willing to pull external capabilities into one unified tool system. MCP resources, dynamic tools, and tool discovery interfaces in `tools/src/lib.rs` show that extensions are expected to become schema-defined, rule-governed tools rather than temporary runtime understandings.
-
-That is a consequential divergence. Once the ecosystem grows, the whole system becomes more dependent on how extensions obey the general rules. The team that thinks through boundary migration early is the team whose extension ecosystem is less likely to degenerate into a junk closet later.
+Both systems can attach more capabilities, but the difference remains. Claude Code weaves skills, hooks, permissions, and tool prompts into a situational governance chain so local rules ride the main loop. Codex pulls external capabilities into one unified tool system — MCP resources, dynamic tools, and tool discovery in `tools/src/lib.rs` expect extensions to become schema-defined, rule-governed tool objects rather than runtime understandings. Once the ecosystem grows, "how extensions obey the general rules" becomes the ballast: the team that thinks through boundary migration early keeps its extension ecosystem from degenerating into a junk closet.
 
 ## 4.7 Chapter conclusion
 

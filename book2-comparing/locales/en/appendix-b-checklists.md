@@ -2,60 +2,53 @@
 
 If comparison cannot be reduced into checklists, what remains is usually a set of well-phrased but hard-to-use conclusions. This appendix compresses the previous chapters into questions a team can actually discuss.
 
-## B.1 Control-plane checklist
+## B.1 Control-plane checklist (invariants)
 
-Check these questions:
+```
+assert every instruction has {source, type, precedence}        # fragments are identifiable
+assert prompt separates control plane from output style        # tone ≠ order
+assert local-rule scope (CLAUDE.md / AGENTS.md) explicitly labeled
+assert team-rule changes land via diff                         # not oral agreement
+```
+If these cannot be answered, the control plane is still at "good enough to use" rather than "good enough to govern."
 
-- Are local rules assembled as free text, or injected as typed fragments with bounded structure?
-- Can the sources, scope, and precedence of instructions be explained clearly?
-- Which parts of prompt are real control plane, and which are merely output style?
-- Are team rules closer to `CLAUDE.md`-style field notes, or closer to `AGENTS.md`-style structured institutional entry points?
+## B.2 Continuity checklist (invariants)
 
-If these questions cannot be answered clearly, the control plane is probably still at the "good enough to use" stage rather than the "good enough to govern" stage.
+```
+assert continuity sovereignty ∈ {main loop, thread+rollout+state}  # pick one explicitly
+assert interrupt ⇒ tool_result closed (synthetic fallback counts)
+assert long session has compact / truncation / recovery trio
+assert thread.id / session indexing / persisted state = first-class concepts
+```
+If long sessions rely on the model to "remember," you do not need the rest of the evaluation.
 
-## B.2 Continuity checklist
+## B.3 Tool and approval checklist (invariants)
 
-Check these questions:
+```
+assert tool = schema-typed interface, additional_properties=false
+assert approval policy independently evaluable (not buried in code if/else)
+assert high-risk tools (Bash etc) get dedicated governance       # not flat treatment
+assert {workdir, network, sandbox, approval} explicitly expressible
+```
+If the only answer is "we also have permission controls," the permission system has not been designed.
 
-- Is continuity maintained mainly by a main loop, or mainly by thread / rollout / state?
-- After interruption, who guarantees closure for tool ledger, message sequence, and state handoff?
-- When long sessions inflate, is there an explicit compact / truncation / recovery mechanism?
-- Are thread IDs, session indexing, and persisted state first-class concepts?
+## B.4 Local governance checklist (invariants)
 
-If long sessions rely mostly on the model to "remember," there is usually no need to continue the evaluation.
+```
+assert local rules layerable by {directory, team, task type}
+assert skill = reusable institutional slice, not long prompt    # has version / source
+assert hooks attach to explicit lifecycle events (pre/post/session_start/stop)
+assert {skill, rule, hook} carry {version, source, trigger boundary}
+```
 
-## B.3 Tool and approval checklist
+## B.5 Multi-agent and verification checklist (invariants)
 
-Check these questions:
-
-- Are tools runtime objects, or schema-defined interfaces?
-- Are approvals based mainly on field judgment, or on an explicit policy / rule system?
-- Are dangerous tools specially governed, rather than treated like ordinary read operations?
-- Can boundaries such as `workdir`, network, sandbox, and approval be expressed explicitly?
-
-If the system can only answer "we also have permission controls," that usually means the permission system has not actually been designed.
-
-## B.4 Local governance checklist
-
-Check these questions:
-
-- Can local rules be layered by directory, team, and task type?
-- Can skills be treated as reusable slices of institution rather than merely long prompts?
-- Are hooks attached to explicit lifecycle events?
-- Do skills, rules, and hooks have version, origin, and trigger boundaries?
-
-When team governance relies mainly on oral explanation, the system eventually learns to pretend it understands.
-
-## B.5 Multi-agent and verification checklist
-
-Check these questions:
-
-- Is multi-agent used for parallelism, or for separation of responsibility?
-- Is there an independent verification mechanism?
-- Is delegation represented as explicit tools or explicit state events?
-- When a child agent fails, times out, or is cancelled, who owns cleanup?
-
-A multi-agent system that cannot verify independently and cannot close out cleanly is usually just parallelized disorder.
+```
+assert multi-agent's first purpose is responsibility split; parallelism is a bonus  # else it is parallelized disorder
+assert independent verifier exists (verifier ≠ implementer)
+assert delegation = explicit tool or explicit state event, not runtime magic
+assert child-agent {failure, timeout, cancel} ⇒ named cleanup owner
+```
 
 ## B.6 Which kind of system are you closer to?
 
@@ -90,3 +83,22 @@ If time is short, ask only these six:
 - After something goes wrong, what evidence lets the team trace the path back?
 
 Once these six questions are asked, the system's political family usually reveals itself.
+
+## B.8 Thresholds & orderings quick reference
+
+| Name | Value | Purpose | Source |
+|---|---|---|---|
+| `MAX_ENTRYPOINT_LINES` | 200 | entry file line cap | Book 1 ch5 / `memdir/memdir.ts` |
+| `MAX_SECTION_LENGTH` | 2_000 | session-memory per-section cap | `SessionMemory/prompts.ts` |
+| `MAX_TOTAL_SESSION_MEMORY_TOKENS` | 12_000 | session-memory total budget | `SessionMemory/prompts.ts` |
+| `AUTOCOMPACT_BUFFER_TOKENS` | 13_000 | autocompact warning buffer | `compact/autoCompact.ts` |
+| `MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES` | 3 | breaker threshold | `compact/autoCompact.ts` |
+| `yield_time_ms` | per-tool | max ms a single exec may block | `local_tool.rs` |
+| `wait_agent.timeout` | min/default/max | child-agent wait window | `agent_tool.rs` |
+| Bash subcommand cap | implicit | max compound subcommands per call | `bashPermissions.ts` |
+
+Event orderings:
+
+- session_start → user_prompt_submit → pre_tool_use → tool exec → post_tool_use → stop
+- spawn_agent → send_input* → wait_agent → close_agent (cascades to descendants)
+- PTL → collapse → reactive compact → if still PTL, surface error (no further loop)

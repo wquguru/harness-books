@@ -4,80 +4,51 @@
 
 ## 5.1 真正能落地的 agent，一定会地方化
 
-任何一个通用 coding agent，只要真的开始给团队干活，就会遇到同一个问题：公司有公司的规矩，仓库有仓库的规矩，目录有目录的规矩，人还有人的怪脾气。系统要是不能吸收这些局部制度，就只能永远停留在演示环境里。
-
-Claude Code 和 Codex 都给出了答案，只是方向不同。
+任何通用 coding agent 一旦开始给团队干活，就遇到同一问题：公司有公司规矩，仓库有仓库规矩，目录有目录规矩，人还有怪脾气。系统不能吸收这些局部制度，就只能停在演示环境里。Claude Code 和 Codex 都给出答案，方向不同。
 
 ## 5.2 Claude Code：把局部制度做成现场记忆
 
-Claude Code 的地方化能力，很大一部分落在：
-
-- `CLAUDE.md`
-- skill
-- hook
-- session memory
-
-这几样东西组合起来，有一种很强的”现场经验沉淀”味道：
-
-- `CLAUDE.md` 告诉系统在这个仓库、这个目录、这个团队里什么算常识；
-- skill 把某类工作流程打包；
-- hook 把团队治理挂到生命周期节点上；
-- session memory 则让当前工作不至于每轮都从头做人。
-
-它们的共同特点，是都非常贴近任务现场。这里的重点在于让规则进入当前会话，参与当前执行，而不是先定义一套万古不变的组织制度。Claude Code 很像一个愿意随身带笔记本的工程师，走到哪就把当地规矩抄下来。
-
-这种做法的好处，是非常实用。它适合多项目、多目录、多种局部约束并存的环境。坏处是，如果没有额外整理，知识容易以“现场补丁”的形式扩张。
+地方化能力落在 `CLAUDE.md`、skill、hook、session memory——组合起来有"现场经验沉淀"味道：`CLAUDE.md` 说清此仓库/目录/团队的常识，skill 打包工作流，hook 挂生命周期，session memory 让当前工作不必每轮重新做人。共同特点是贴近任务现场——让规则进入当前会话、参与当前执行，而不是先定义万古不变的制度。像一个随身带笔记本的工程师，走到哪把当地规矩抄下来：很实用，适合多项目多目录多约束并存，但没额外整理的话知识容易以"现场补丁"扩张。
 
 ## 5.3 Codex：把局部制度做成结构化注入和事件系统
 
-Codex 也有 skill，也有本地规则，也有 hook，但气质明显更制度化。
-
-先看 skill。`skills/src/lib.rs` 显示系统会把内置 system skills 安装到 `CODEX_HOME/skills/.system`，还会对 skill 资产做 hash/fingerprint。这个细节很说明问题，因为它表明 skill 在 Codex 里不只是临时读入的文本，而是“被安装、被管理、可追踪版本形态”的资产。
-
-更关键的是，它连“什么时候需要重装 skill”都想好了。`install_system_skills()` 会先算 embedded skills 的 fingerprint，只有 marker 不匹配时才删掉旧目录并重新写入；匹配时直接跳过。这个细节看着小，实际上说明 Codex 把 skill 当成可部署资产，而不是每次启动都顺手读一堆模板文本。
-
-再看 `AGENTS.md`。这套机制在 Codex 中不只表示“读一份本地说明”，还伴随着作用域和 hierarchy 的讨论。也就是说，局部规则不只是内容，还带着位置关系。
-
-最后看 hook。`hooks/src/engine/mod.rs` 里把 hook 事件明确拆成：
-
-- `session_start`
-- `pre_tool_use`
-- `post_tool_use`
-- `user_prompt_submit`
-- `stop`
-
-而且每个 handler 都有 `event_name`、matcher、timeout、status message、source path、display order 等结构。这说明 Codex 的 hook 更接近显式生命周期事件系统，而不是“哪里方便就塞一个回调”。
-
-再往下看还会发现，hook engine 区分了 `preview_*` 和 `run_*` 两套路径，先预览哪些 handler 会命中，再决定真正执行；在 Windows 上还会因为能力不完整而明确关闭 `codex_hooks` 并返回 warning。也就是说，Codex 连 hook 能不能开、为什么不开，都希望成为系统可解释的一部分。
+Codex 也有 skill、本地规则、hook，但更制度化。skill：`skills/src/lib.rs` 把 system skills 装到 `CODEX_HOME/skills/.system` 并做 fingerprint——skill 不是临时读入的文本，而是被安装、被管理、可追踪版本的资产。`install_system_skills()` 比对 fingerprint，仅 marker 不匹配时才覆写。`AGENTS.md` 不只是"读一份本地说明"，还伴随作用域和 hierarchy 讨论——局部规则不只是内容，还带位置关系。hook：`hooks/src/engine/mod.rs` 把事件拆成 `session_start`、`pre_tool_use`、`post_tool_use`、`user_prompt_submit`、`stop`，每个 handler 都有 `event_name`、matcher、timeout、status message、source path、display order——接近显式生命周期事件系统。engine 还分 `preview_*` / `run_*` 两条路径（先预览再执行），Windows 上因能力不完整明确关闭 `codex_hooks` 并返回 warning——hook 能不能开、为什么不开，都希望可解释。
 
 ## 5.4 Claude Code 偏经验收编，Codex 偏制度挂载
 
-把两者放在一起看，差异就非常清楚了。
+Claude Code 的本地治理把现场经验不断收编进主循环附近，擅长让 agent 在当前上下文里迅速学会"这里怎么办事"；Codex 把地方规则挂载到明确控制面与生命周期机制上，擅长让规则被分类、排序、安装、触发。团队感也就不同：前者像熟悉现场、懂看气氛的老员工，后者像制度意识极强的新项目经理——先把规则贴出来再协调人做事。
 
-Claude Code 的本地治理，更接近把现场经验不断收编进主循环附近。它擅长让 agent 在当前上下文里迅速学会“这里怎么办事”。
+### 骨架：Codex hook 生命周期 (skeleton)
 
-Codex 的本地治理，则更接近把地方规则挂载到明确控制面与生命周期机制上。它擅长让规则不仅被读懂，还被分类、排序、安装和触发。
+```
+// 骨架: Codex hook engine  (源: hooks/src/engine/mod.rs)
+events = [session_start, user_prompt_submit, pre_tool_use, post_tool_use, stop]
+for ev in events:
+    handlers = preview_handlers(ev, ctx)        // 先预览命中
+    emit(preview_event { ev, handlers })
+    for h in handlers sorted by display_order:
+        if match(h.matcher, ctx) and not timed_out(h.timeout):
+            run_handler(h)                      // 真正触发
+        else:
+            log_skip(h, reason)
+on platform == windows: disable(codex_hooks); warn("incomplete support")
+```
 
-这就导致两者的团队感不同。
+### 不变式：hook 事件顺序
 
-Claude Code 的团队感，像一个熟悉现场、懂得看气氛的老员工。
-
-Codex 的团队感，像一个新来但制度意识极强的项目经理，先把规则贴出来，再开始协调人做事。
+```
+assert session_start fires once per thread before any tool_use
+assert pre_tool_use fires immediately before execution; post_tool_use after
+assert stop fires exactly once per thread termination path
+assert preview_* path never executes handlers; only run_* does
+assert each handler has {event_name, matcher, timeout, source_path, display_order}
+assert display_order 稳定 ⇒ 同一事件下多 handler 可重放
+assert skill fingerprint 不匹配 ⇒ 触发重装；匹配则跳过  (skills/src/lib.rs)
+```
 
 ## 5.5 对组织可复制性的影响
 
-这种差异最影响组织复制能力。
-
-如果一个系统主要靠现场经验注入，它会更快地适应新仓库，也更容易在复杂局部语境里保持有效。但复制到更多团队时，往往需要额外整理，避免大家各写各的 `CLAUDE.md`、各做各的 skill，最后像各省自行印教材。
-
-如果一个系统主要靠结构化注入和事件挂载，它在组织扩展上更有潜力。因为规则更容易被统一分发、版本化和审计。代价是学习成本更高，团队要先接受更多显式制度。
-
-这是一种经典工程取舍：
-
-- 越贴近现场，越有弹性
-- 越制度化，越易复制
-
-两者都不会自动给你幸福。真正决定结果的，是团队究竟需要哪一种稳定性。
+主要靠现场经验注入的系统，适应新仓库更快、在复杂局部语境中更有效；但复制到更多团队时需要额外整理，否则各写各的 `CLAUDE.md`、各做各的 skill，像各省自印教材。主要靠结构化注入和事件挂载的系统，在组织扩展上更有潜力——规则易统一分发、版本化和审计；代价是学习成本更高，团队要先接受更多显式制度。经典取舍：越贴近现场越有弹性，越制度化越易复制。真正决定结果的，是团队需要哪一种稳定性。
 
 ## 5.6 本章结论
 

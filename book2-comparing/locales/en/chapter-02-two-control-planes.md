@@ -4,32 +4,62 @@
 
 ## 2.1 Control is not about tone
 
-Talking about prompts as if it were just a tone exercise is misleading. Claude Code and Codex both treat prompts as parts of a behavioral control plane. The difference lies not in the copy but in the mechanisms that assemble and surface it.
+Treating prompts as a tone exercise is misleading. Claude Code and Codex both treat prompts as part of a behavioral control plane; the difference is in the mechanism that assembles them. Claude Code assembles dynamically — baseline text, append prompts, agent roles, `CLAUDE.md`, memory, and output styles layered at runtime according to task, tools, and team context; the art is priority, conflict resolution, and how each layer folds into the next. Codex treats instructions as structured fragments — `AGENTS.md`, user messages, and skills become chunks with clear markers, start/end boundaries, and serialization rules, turning instructions from free-form narrative into identifiable contextual units.
 
-Claude Code assembles prompts dynamically. Baseline text, append prompts, agent roles, `CLAUDE.md`, memory, and output styles are layered at runtime according to the task, tools, and team context. The art is in priority, conflict resolution, and how each layer folds into the next. The control plane is a living pipeline that must adapt every loop.
+## 2.2 Claude Code's busy assembly line
 
-Codex treats instructions as structured fragments. `AGENTS.md`, user messages, and skills become chunks with clear markers, start and end boundaries, and serialization rules. Tools and instructions stop being free-form narrative and become identifiable contextual units. This gives the control plane traceability and the ability to grow more governance artifacts without losing clarity.
+System prompts here are not fixed documents but a production line: defaults form the foundation, append prompts drop requirements, agent prompts add roles, `CLAUDE.md` and memory inject local conditions. Flexibility lets one loop handle many scenarios, but ordering is critical — wrong ordering dilutes instructions or lets conflicts slip through. Runtime governance is therefore essential: control is constantly injected, overwritten, compressed, or pruned as tasks shift, and the loop recalculates "what matters now" each round. The guiding intuition: control follows the scene — it cannot freeze into static rules.
 
-## 2.2 Claude Code’s busy assembly line
+## 2.3 Codex's filing-room approach
 
-Claude Code’s system prompts are not fixed documents; they are a production line. Defaults provide the foundation; append prompts drop requirements; agent prompts add roles; `CLAUDE.md` and memory inject local conditions. This flexibility lets the same loop handle different scenarios, but it makes the order of assembly critical: wrong ordering can dilute instructions or let conflicts slip through.
+Codex insists on identifiable fragments. Names like `ContextualUserFragmentDefinition` highlight type, boundaries, wrapping rules, and message transformation. AGENTS, skills, and user instructions are tagged contextual units the system can recognize and manipulate — stronger debuggability, and a path to more programmatic governance because every instruction already fits a type hierarchy.
 
-Because of this, runtime governance is essential. Control is constantly injected, overwritten, compressed, or pruned when tasks shift. The query loop recalculates “what matters now” each round. Claude Code’s guiding intuition is: control has to follow the scene—it cannot be frozen into static rules.
+And this is not merely elegant naming. `fragment.rs` defines constants like `AGENTS_MD_START_MARKER`, `AGENTS_MD_END_MARKER`, `SKILL_OPEN_TAG`, and `SKILL_CLOSE_TAG`; `ContextualUserFragmentDefinition::wrap()` and `into_message()` turn those fragments into `ResponseItem::Message`. In `user_instructions.rs`, `UserInstructions` serializes the directory into `# AGENTS.md instructions for ...`, while `SkillInstructions` carries explicit `<name>` and `<path>` fields. Codex tries hard not to make the model guess where a rule came from.
 
-## 2.3 Codex’s filing-room approach
+### Skeleton: two control-plane assemblies
 
-Codex insists on identifiable fragments. Names like `ContextualUserFragmentDefinition` highlight type, boundaries, wrapping rules, and transformation into messages. AGENTS, skills, and user instructions are not just textual—they are tagged contextual units that the system can recognize and manipulate. This yields stronger debuggability and a path to more programmatic governance, because every instruction already fits into a type hierarchy.
+```
+// skeleton: Claude Code dynamic assembly  (src: constants/prompts.ts, utils/systemPrompt.ts, claudemd.ts)
+system_prompt = concat(
+    default_prompt,           // baseline
+    append_prompt,            // overlay requirements
+    agent_prompt,             // role
+    claudemd_layers,          // team / personal / project
+    memory_sections,          // session memory
+    output_style              // expression discipline
+)
+// recomputed every loop: memory prefetch, collapse, microcompact, autocompact
 
-And this is not merely a matter of elegant naming. In `fragment.rs`, Codex really defines constants such as `AGENTS_MD_START_MARKER`, `AGENTS_MD_END_MARKER`, `SKILL_OPEN_TAG`, and `SKILL_CLOSE_TAG`, then uses `ContextualUserFragmentDefinition::wrap()` and `into_message()` to turn those fragments into `ResponseItem::Message`. In `user_instructions.rs`, `UserInstructions` serializes the directory into the line `# AGENTS.md instructions for ...`, while `SkillInstructions` carries explicit `<name>` and `<path>` fields. In other words, Codex tries hard not to make the model guess where a rule came from.
+// skeleton: Codex fragment assembly  (src: instructions/src/fragment.rs, user_instructions.rs)
+for frag in [agents_md, skill, user_instructions]:
+    body = ContextualUserFragmentDefinition::wrap(
+        START_MARKER, content, END_MARKER,
+        meta { source_dir, name, path }
+    )
+    msg  = frag.into_message()              // -> ResponseItem::Message
+    thread.append(msg)
+```
+
+### Invariants
+
+```
+assert every fragment has matching (START_MARKER, END_MARKER)   # markers paired
+assert fragment.source ∈ {AGENTS_MD, SKILL, USER}              # type is identifiable
+assert precedence(project) > precedence(team) > precedence(default)  # monotonic priority
+assert claudemd_layers overlay order = team → personal → project  # later overrides earlier
+assert child_agents_md enabled ⇒ append scope/precedence notes  # scope is explicit
+```
 
 ## 2.4 CLAUDE.md vs AGENTS.md
 
-The distinction between CLAUDE.md and AGENTS.md is revealing. Claude Code’s CLAUDE.md feels like a local bulletin board—an on-site rule set tailored to a directory or workspace. It is pragmatic, local, and mission-focused. Codex’s AGENTS.md, by contrast, names scope, priority, and inheritance. Even when `child_agents_md` is not present, Codex injects scoped instructions to clarify applicability. Claude Code brings local rules into the conversation; Codex brings local rules into the institution.
+`CLAUDE.md` is a local bulletin board: close to the task directory, paired with memory and skills, good for registering common sense, taboos, and local rules. `AGENTS.md` is pulled into Codex's hierarchy discussion — `docs/agents_md.md` says that even when no `AGENTS.md` is present, enabling `child_agents_md` appends scope and precedence notes. Codex cares not just whether rules exist, but whether their applicability and inheritance are explicitly stated. Claude Code brings local rules into the conversation; Codex brings them into the institution.
 
 ## 2.5 The trade-offs
 
-Claude Code’s runtime assembly is flexible but hard to formalize. Fragmented instruction is explicit but structural. Claude Code builds experience-driven control; Codex builds institutional control. The former trades explicitness for agility; the latter trades simplicity for clarity and maintenance cost.
+Runtime assembly is flexible but hard to formalize, leaning on the main loop and engineering judgment; once rules multiply, overlap and semantic dilution become real risks. Structured fragments are explicit but heavier: markers, types, serialization, and injection all need definitions, plus calls on what deserves first-class status. The former grows experience-driven control, the latter grows institutional control — one agile but under-declared, the other clear but carrying ongoing structural cost.
 
-## 2.6 This chapter’s conclusion
+## 2.6 This chapter's conclusion
 
-Claude Code views prompts as dynamic runtime builds; Codex views instructions as identifiable fragments. One feels like a production floor; the other feels like a bureaucracy. The right choice depends on whether your primary worry is volatile sessions or unclear rule sources.
+> Claude Code views prompts as dynamic runtime builds; Codex views instructions as identifiable fragments.
+
+One feels like a production floor, the other like a bureaucracy. The right choice depends on whether your primary worry is volatile sessions or unclear rule sources. The next chapter goes deeper: does continuity live in the query loop, or in thread, rollout, and state infrastructure?
