@@ -49,6 +49,83 @@ Treat book release metadata as structured config, not manuscript text.
 
 Do not move exported PDFs into `assets/`. That mixes source inputs with build outputs and makes cleanup/error analysis harder.
 
+## Diagrams (PUML)
+
+`.puml` is the source of truth in `diagrams/`. The committed `.png` next to it is the artifact embedded in the book. Regenerate `.png` with `python3 tools/book-kit/export_pdf.py <book> --clean-generated` (this calls `plantuml -tpng`); never hand-edit a `.png`.
+
+### Pick The Diagram Type By What You Want To Show
+
+These books are about runtime behavior, so default to diagrams that surface behavior, not static structure:
+
+- State diagram (`state`, `[*]`, `<<choice>>`) — for lifecycles, "where state lives," and stateful loops (query loop, thread, budget thresholds).
+- Activity diagram (`start`/`stop`, `if/then/else`, `fork`/`fork again`) — for decision ladders and governance flows (recovery paths, compact rebuild, tool batch ordering).
+- Sequence diagram (`actor`, `participant`, `->`) — for temporal interactions between distinct actors (coordinator/worker, user/runtime/worker).
+- Component / box-and-arrow — only when structure itself is the point. Do not use it as a default layout for behavioral content.
+
+If a diagram does not show a loop, a decision branch, a transition, or a temporal exchange, reconsider whether it is earning its page.
+
+### Comparison Diagrams (book2)
+
+When contrasting Claude Code vs Codex on a single dimension:
+
+- Use `top to bottom direction` and stack the two sides vertically. Do not lay them out side-by-side with `left to right direction`; that invites parallel component lists and makes the contrast hard to read at book width.
+- Wrap each side in a bold composite state: `state "<b>Claude Code - assemble then loop</b>" as CC { ... }` and `state "<b>Codex - structure then turn</b>" as CX { ... }`.
+- Separate the two composites with a `[hidden]` edge: `CC -[hidden]-> CX`.
+- Contrast exactly one behavioral dimension per diagram (control plane, continuity, governance, ...). Use a closing note on each side to name the design lever, not to restate the boxes.
+
+### Titles And Notes
+
+- Title: name the behavior, not the chapter. Use the form `Topic - Behavior Statement`, e.g. `Query Loop Core - One Iteration Of The While Loop`, `Recovery Decision Paths - Cheapest Fix First`, `Tool Batch Ordering - Concurrency Without Context Reordering`. Avoid `Chapter N · Topic` phrasing.
+- Notes should explain the invariant, the design lever, or the principle a designer can copy ("concurrency speeds up I/O; contextual cause-and-effect is always replayed in original block order"). Notes that just restate the adjacent boxes are noise.
+
+### Rendering For Book Pages
+
+Target render dimensions of roughly 700-1500 px on each axis so the diagram fits a printed page without forced scaling.
+
+Standard skinparam baseline (default Harness palette):
+
+```
+skinparam backgroundColor #FEFEFE      # transparent for book2 comparisons
+skinparam shadowing false
+skinparam dpi 120                       # 120 for comparison diagrams, 130 for single-book
+skinparam defaultFontName Georgia
+skinparam defaultFontSize 14
+skinparam TitleFontSize 19
+skinparam TitleFontColor #161616
+skinparam NoteFontSize 12
+skinparam ArrowFontSize 12
+skinparam ArrowColor #5E5A53
+```
+
+Then add only the semantic blocks the diagram actually uses (`skinparam state { ... }`, `skinparam activity { ... }`, `skinparam sequence { ... }`, `skinparam note { ... }`) using the palette below.
+
+Default Harness palette (book1 and Claude-Code-side of book2):
+
+- shape background `#F2E9D9`, border `#1D1D1D`, font `#161616`, arrow `#5E5A53`, start `#8C2721`, end `#161616`
+- note background `#F5EBDD`, border `#8C2721`, font `#7B1E1E`
+- accent fills for distinguishing roles inside one diagram: `#E8DDD0` (input / source), `#EFE6D8` (runtime / loop), `#F5EBDD` (decision / warning / error)
+
+Codex palette (Codex-side of book2 only, when contrast with the Harness palette is the point):
+
+- shape background `#F8FAFC`, border `#334155`, font `#0F172A`, arrow `#475569`
+- note background `#FFF7ED`, border `#C2410C`, font `#7C2D12`
+
+Do not reintroduce these settings, which were removed from the redesigned diagrams because they fight auto-layout or print badly:
+
+- `linetype ortho` and `packageStyle rectangle`
+- explicit `ranksep` / `nodesep` overrides
+- per-shape `RectangleFontSize`, `PackageFontSize`, etc. (use `defaultFontSize` plus the semantic blocks above)
+- DPI above 130 (renders that overflow the page)
+
+### Validation After Diagram Changes
+
+When changing a `.puml`:
+
+1. Regenerate with `--clean-generated` so the embedded `.png` matches the source.
+2. Eyeball the rendered `.png`: does it fit roughly 700-1500 px on each axis, and does the contrast read at book width?
+3. Rebuild the affected book PDF and confirm the diagram is not clipped at the page boundary.
+4. For book2 comparison diagrams, also confirm the two composite states stack vertically and the `[hidden]` separator is keeping them apart.
+
 ## Output Naming
 
 Keep final exports per book under `exported/` with stable names:
@@ -187,7 +264,7 @@ After substantial book or pipeline changes, run enough of this checklist to cove
 - Confirm files land in `exported/`
 - Check TOC pages visually if headings, spacing, or chapter titles changed
 - Confirm no local `.md` links leak into the merged PDF text
-- If diagrams changed and `.puml` is the source, use `--clean-generated`
+- If diagrams changed and `.puml` is the source, use `--clean-generated`, then run the diagram validation steps in the **Diagrams (PUML)** section
 
 ## Decision Heuristics
 

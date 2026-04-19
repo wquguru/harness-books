@@ -54,6 +54,8 @@ Treat release metadata as first-class book configuration in each `book.json`.
 
 Write Markdown with short sections, stable heading hierarchy, and descriptive filenames such as `chapter-06-errors-and-recovery.md`. Keep `SUMMARY.md` aligned with the actual reading order. Diagram sources should stay paired as `diagrams/name.puml` and `diagrams/name.png`.
 
+For PUML diagrams, default to behavior-first types (state machines, activity flows, sequence diagrams) rather than static box-and-arrow component layouts; reserve component diagrams for cases where structure itself is the point. Use the title form `Topic - Behavior Statement`, target render dimensions of roughly 700-1500 px on each axis, and stack book2 comparison diagrams vertically (`top to bottom direction`) instead of laying them out side-by-side. Regenerate the embedded `.png` via `python3 tools/book-kit/export_pdf.py <book> --clean-generated`. See the `harness-book-best-practice` skill for the full skinparam baseline, palettes, and validation steps.
+
 For Python tooling, follow existing style: 4-space indentation, small functions, and standard-library-first scripts.
 
 ## Testing Guidelines
