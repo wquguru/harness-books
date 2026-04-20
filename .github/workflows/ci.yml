@@ -38,6 +38,13 @@ jobs:
             texlive-xetex \
             texlive-lang-chinese
 
+      - name: Install EPUB validation tool
+        run: |
+          sudo apt-get install -y default-jre-headless
+          wget https://github.com/w3c/epubcheck/releases/download/v5.1.0/epubcheck-5.1.0.zip
+          unzip epubcheck-5.1.0.zip
+          echo "$(pwd)/epubcheck-5.1.0" >> $GITHUB_PATH
+
       - name: Build Honkit sites
         run: |
           python3 tools/book-kit/build_honkit.py book1-claude-code
@@ -63,6 +70,20 @@ jobs:
           python3 tools/book-kit/export_pdf.py book2-comparing
           python3 tools/book-kit/export_pdf.py book2-comparing --locale en
 
+      - name: Export EPUBs
+        run: |
+          python3 tools/book-kit/export_epub.py book1-claude-code
+          python3 tools/book-kit/export_epub.py book1-claude-code --locale en
+          python3 tools/book-kit/export_epub.py book2-comparing
+          python3 tools/book-kit/export_epub.py book2-comparing --locale en
+
+      - name: Validate EPUBs with epubcheck
+        run: |
+          epubcheck book1-claude-code/exported/book1-claude-code.epub
+          epubcheck book1-claude-code/exported/book1-claude-code-en.epub
+          epubcheck book2-comparing/exported/book2-comparing.epub
+          epubcheck book2-comparing/exported/book2-comparing-en.epub
+
       - name: Assemble unified Pages site
         env:
           SITE_URL: https://harness-books.agentway.dev
@@ -79,6 +100,10 @@ jobs:
           test -f book1-claude-code/exported/book1-claude-code-en.pdf
           test -f book2-comparing/exported/book2-comparing.pdf
           test -f book2-comparing/exported/book2-comparing-en.pdf
+          test -f book1-claude-code/exported/book1-claude-code.epub
+          test -f book1-claude-code/exported/book1-claude-code-en.epub
+          test -f book2-comparing/exported/book2-comparing.epub
+          test -f book2-comparing/exported/book2-comparing-en.epub
           test -f dist/index.html
           test -f dist/en/index.html
           test -f dist/book1-claude-code/index.html

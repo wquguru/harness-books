@@ -1,0 +1,157 @@
+/* EPUB-specific styles for reflowable text layout */
+
+/* Base font stack for Chinese and Latin text */
+body {
+    font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", "STSong", serif;
+    font-size: 1em;
+    line-height: 1.6;
+    color: #161616;
+    margin: 0;
+    padding: 1em;
+    text-align: justify;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Noto Serif CJK SC", "Noto Serif SC", "Songti SC", "STSong", serif;
+    font-weight: bold;
+    page-break-after: avoid;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+h1 {
+    font-size: 1.8em;
+    border-bottom: 2px solid #7b1e1e;
+    padding-bottom: 0.3em;
+}
+
+h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.2em;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+    page-break-inside: avoid;
+}
+
+/* Blockquotes */
+blockquote {
+    color: #5a5a5a;
+    border-left: 4px solid #7b1e1e;
+    padding-left: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    font-style: italic;
+}
+
+/* Code blocks and inline code */
+pre, code {
+    font-family: "Noto Sans Mono", "Courier New", monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 1em;
+    overflow-x: auto;
+    page-break-inside: avoid;
+}
+
+code {
+    background-color: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+/* Tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    page-break-inside: avoid;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 0.5em;
+    text-align: left;
+}
+
+th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+/* Lists */
+ul, ol {
+    margin-left: 1.5em;
+    padding-left: 0;
+}
+
+li {
+    margin-bottom: 0.5em;
+}
+
+/* Links */
+a {
+    color: #7b1e1e;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Horizontal rule */
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2em 0;
+}
+
+/* Ensure proper page breaks */
+.break-before {
+    page-break-before: always;
+}
+
+.break-after {
+    page-break-after: always;
+}
+
+.break-inside-avoid {
+    page-break-inside: avoid;
+}
+
+/* Title page styling (if needed) */
+.title-page {
+    text-align: center;
+    margin-top: 3em;
+}
+
+.title-page h1 {
+    border: none;
+    margin-bottom: 0.5em;
+}
+
+.title-page .subtitle {
+    font-size: 1.2em;
+    color: #666;
+}
+
+.title-page .author {
+    font-size: 1.1em;
+    margin-top: 2em;
+}
+
+.title-page .publisher {
+    margin-top: 3em;
+    font-style: italic;
+}

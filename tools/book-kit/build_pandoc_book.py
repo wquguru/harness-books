@@ -15,7 +15,7 @@ from book_meta import (
 )
 
 
-def build_book(book_dir: Path, meta: dict, source_dir: Path) -> str:
+def build_book(book_dir: Path, meta: dict, source_dir: Path, format: str = "pdf") -> str:
     readme_path = meta.get("readme_path", "README.md")
     chunks: list[str] = []
     for md_path in chapter_paths(source_dir):
@@ -28,17 +28,23 @@ def build_book(book_dir: Path, meta: dict, source_dir: Path) -> str:
                 cover_alt=meta.get("cover_alt"),
                 front_page_heading=str(meta.get("front_page_heading", "导读")),
             )
-        else:
+        elif format == "pdf":
+            # Only apply LaTeX conversion for PDF
             short_title = short_title_for_path(md_path, text)
             if short_title:
                 text = replace_top_heading_with_latex(
                     text,
                     short_title=short_title,
                 )
+        # Always strip local file links
         text = strip_local_file_links(text)
         chunks.append(text)
 
-    return "\n\n\\clearpage\n\n".join(chunks) + "\n"
+    if format == "pdf":
+        return "\n\n\\clearpage\n\n".join(chunks) + "\n"
+    else:
+        # For EPUB, join with blank lines
+        return "\n\n".join(chunks) + "\n"
 
 
 def main() -> None:

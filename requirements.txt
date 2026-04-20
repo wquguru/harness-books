@@ -1,0 +1,14 @@
+# Python Dependencies for Harness Books
+# =====================================
+
+# All Python scripts in this project use only the standard library.
+# No external Python packages are required.
+
+# System dependencies (binary tools) are documented in system-dependencies.md
+# These include: pandoc, librsvg, poppler, plantuml, honkit
+
+# To install system dependencies, see system-dependencies.md for instructions:
+# - Conda: conda create -n epub pandoc librsvg poppler -c conda-forge
+# - Ubuntu: sudo apt-get install pandoc librsvg2-bin poppler-utils plantuml
+# - macOS: brew install pandoc librsvg poppler plantuml
+

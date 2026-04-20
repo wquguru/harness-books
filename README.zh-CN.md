@@ -17,7 +17,8 @@
       <strong>Harness Engineering：Claude Code 设计指南</strong>
       <br>
       <a href="https://harness-books.agentway.dev/book1-claude-code/">在线阅读</a> ·
-      <a href="https://harness-books.agentway.dev/book1-claude-code/exported/book1-claude-code.pdf">PDF 下载</a>
+      <a href="https://harness-books.agentway.dev/book1-claude-code/exported/book1-claude-code.pdf">PDF 下载</a> ·
+      <a href="https://harness-books.agentway.dev/book1-claude-code/exported/book1-claude-code.epub">EPUB 下载</a>
     </td>
     <td align="center" valign="top" width="50%">
       <a href="https://harness-books.agentway.dev/book2-comparing/">
@@ -27,7 +28,8 @@
       <strong>Claude Code 和 Codex 的 Harness 设计哲学</strong>
       <br>
       <a href="https://harness-books.agentway.dev/book2-comparing/">在线阅读</a> ·
-      <a href="https://harness-books.agentway.dev/book2-comparing/exported/book2-comparing.pdf">PDF 下载</a>
+      <a href="https://harness-books.agentway.dev/book2-comparing/exported/book2-comparing.pdf">PDF 下载</a> ·
+      <a href="https://harness-books.agentway.dev/book2-comparing/exported/book2-comparing.epub">EPUB 下载</a>
     </td>
   </tr>
 </table>
@@ -132,12 +134,36 @@
 分别构建两个 Honkit 站点，再组装为统一的 Pages 静态站点：
 
 ```bash
-cd book1-claude-code && npx --yes honkit build . _book && cd ..
-cd book2-comparing && npx --yes honkit build . _book && cd ..
+python3 tools/book-kit/build_honkit.py book1-claude-code
+python3 tools/book-kit/build_honkit.py book1-claude-code --locale en
+python3 tools/book-kit/build_honkit.py book2-comparing
+python3 tools/book-kit/build_honkit.py book2-comparing --locale en
 python3 tools/book-kit/build_pages_site.py
 ```
 
 最终输出目录为 `dist/`。
+
+### EPUB 导出
+
+将两本书导出为 EPUB 格式，用于电子阅读器：
+
+```bash
+# 安装依赖（pandoc、librsvg、poppler）
+# 详细安装说明请参考 system-dependencies.md
+# 使用 conda 安装示例：conda create -n epub pandoc librsvg poppler -c conda-forge
+
+# 导出中文版（默认）
+python3 tools/book-kit/export_epub.py book1-claude-code
+python3 tools/book-kit/export_epub.py book2-comparing
+
+# 导出英文版
+python3 tools/book-kit/export_epub.py book1-claude-code --locale en
+python3 tools/book-kit/export_epub.py book2-comparing --locale en
+```
+
+EPUB 文件将输出到每本书的 `exported/` 目录：
+- 中文版：`book1-claude-code/exported/book1-claude-code.epub`、`book2-comparing/exported/book2-comparing.epub`
+- 英文版：`book1-claude-code/exported/book1-claude-code-en.epub`、`book2-comparing/exported/book2-comparing-en.epub`
 
 ---
 

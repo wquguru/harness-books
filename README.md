@@ -17,7 +17,8 @@ Two books on harness engineering. They pursue the same engineering question: onc
       <strong>Harness Engineering: A Design Guide to Claude Code</strong>
       <br>
       <a href="https://harness-books.agentway.dev/en/book1-claude-code/">Read online</a> ·
-      <a href="https://harness-books.agentway.dev/en/book1-claude-code/exported/book1-claude-code-en.pdf">Download PDF</a>
+      <a href="https://harness-books.agentway.dev/en/book1-claude-code/exported/book1-claude-code-en.pdf">Download PDF</a> ·
+      <a href="https://harness-books.agentway.dev/en/book1-claude-code/exported/book1-claude-code-en.epub">Download EPUB</a>
     </td>
     <td align="center" valign="top" width="50%">
       <a href="https://harness-books.agentway.dev/en/book2-comparing/">
@@ -27,7 +28,8 @@ Two books on harness engineering. They pursue the same engineering question: onc
       <strong>The Harness Design Philosophies of Claude Code and Codex</strong>
       <br>
       <a href="https://harness-books.agentway.dev/en/book2-comparing/">Read online</a> ·
-      <a href="https://harness-books.agentway.dev/en/book2-comparing/exported/book2-comparing-en.pdf">Download PDF</a>
+      <a href="https://harness-books.agentway.dev/en/book2-comparing/exported/book2-comparing-en.pdf">Download PDF</a> ·
+      <a href="https://harness-books.agentway.dev/en/book2-comparing/exported/book2-comparing-en.epub">Download EPUB</a>
     </td>
   </tr>
 </table>
@@ -140,6 +142,28 @@ python3 tools/book-kit/build_pages_site.py
 ```
 
 Final output is written to `dist/`.
+
+### EPUB Export
+
+Export both books to EPUB format for e-readers:
+
+```bash
+# Install dependencies (pandoc, librsvg, poppler)
+# See system-dependencies.md for detailed installation instructions
+# Example using conda: conda create -n epub pandoc librsvg poppler -c conda-forge
+
+# Export Chinese versions (default)
+python3 tools/book-kit/export_epub.py book1-claude-code
+python3 tools/book-kit/export_epub.py book2-comparing
+
+# Export English versions
+python3 tools/book-kit/export_epub.py book1-claude-code --locale en
+python3 tools/book-kit/export_epub.py book2-comparing --locale en
+```
+
+EPUB files are written to each book's `exported/` directory:
+- Chinese: `book1-claude-code/exported/book1-claude-code.epub`, `book2-comparing/exported/book2-comparing.epub`
+- English: `book1-claude-code/exported/book1-claude-code-en.epub`, `book2-comparing/exported/book2-comparing-en.epub`
 
 ---
 

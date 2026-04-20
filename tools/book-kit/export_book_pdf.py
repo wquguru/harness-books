@@ -265,7 +265,7 @@ def main() -> None:
     header_tex = book_output_dir / "header.tex"
 
     book_output_dir.mkdir(parents=True, exist_ok=True)
-    book_md.write_text(build_book(book_dir, meta, source_dir), encoding="utf-8")
+    book_md.write_text(build_book(book_dir, meta, source_dir, format="pdf"), encoding="utf-8")
 
     cover_pdf_rel = ensure_cover_pdf(book_dir, meta, book_output_dir)
     titlepage_tex.write_text(render_title_page(meta, cover_pdf_rel, release_items), encoding="utf-8")
