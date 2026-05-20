@@ -1,6 +1,6 @@
 # Harness Books / 驾驭工程
 
-[English README](./README.md)
+[English README](./README.md) | [Tiếng Việt README](./README.vi.md)
 
 [![Read Online](https://img.shields.io/badge/Read%20Online-Harness%20Books-16a34a?style=flat-square&logo=googlechrome&logoColor=white)](https://harness-books.agentway.dev)
 [![About AgentWay](https://img.shields.io/badge/About-AgentWay-22c55e?style=flat-square&logo=bookstack&logoColor=white)](https://agentway.dev)

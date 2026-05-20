@@ -1,0 +1,32 @@
+{
+  "title": "Kỹ nghệ Harness: Hướng dẫn Thiết kế cho Claude Code",
+  "description": "Một bản thảo tiếng Việt về các nguyên lý kỹ nghệ harness đằng sau Claude Code.",
+  "author": "OpenAI Codex",
+  "language": "vi",
+  "root": ".",
+  "styles": {
+    "website": "styles/website.css",
+    "pdf": "styles/pdf.css"
+  },
+  "plugins": [],
+  "pluginsConfig": {},
+  "readme_path": "index.md",
+  "release_date": "2026-04-01",
+  "draft_label": "Nháp",
+  "front_page_heading": "Giới thiệu",
+  "cover_image": "assets/cover-wxb-en.svg",
+  "cover_alt": "Bìa: Kỹ nghệ Harness: Hướng dẫn Thiết kế cho Claude Code",
+  "outputs": {
+    "print_html": "exported/book1-claude-code-vi-print.html",
+    "pdf": "exported/book1-claude-code-vi.pdf",
+    "print_pdf": "exported/book1-claude-code-vi-print.pdf",
+    "book_pdf": "exported/book1-claude-code-vi-book.pdf"
+  },
+  "title_page_lines": [
+    "Từ việc sử dụng agent đến việc triển khai một PoC agent",
+    "https://agentway.dev"
+  ],
+  "pdf": {
+    "documentclass": "book"
+  }
+}

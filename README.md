@@ -1,6 +1,6 @@
 # Harness Books
 
-[中文 README](./README.zh-CN.md)
+[中文 README](./README.zh-CN.md) | [Tiếng Việt README](./README.vi.md)
 
 [![Read Online](https://img.shields.io/badge/Read%20Online-Harness%20Books-16a34a?style=flat-square&logo=googlechrome&logoColor=white)](https://harness-books.agentway.dev/en/)
 [![About AgentWay](https://img.shields.io/badge/About-AgentWay-22c55e?style=flat-square&logo=bookstack&logoColor=white)](https://agentway.dev)

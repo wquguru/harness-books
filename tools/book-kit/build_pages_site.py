@@ -25,6 +25,7 @@ DEFAULT_REPOSITORY_URL = "https://github.com/wquguru/harness-books"
 SITE_LOCALES = (
     {"code": "zh-Hans", "prefix": "", "name": "中文"},
     {"code": "en", "prefix": "en", "name": "English"},
+    {"code": "vi", "prefix": "vi", "name": "Tiếng Việt"},
 )
 LOCALE_STORAGE_KEY = "harness-books-locale"
 
@@ -63,6 +64,40 @@ def locale_config(locale: str) -> dict[str, str]:
             "book_cover_alt_suffix": "cover",
             "og_footer_home": "HARNESS BOOKS / HOME",
             "og_footer_book": "HARNESS BOOKS / EN EDITION",
+        }
+    elif locale == "vi":
+        return {
+            "home_label": "Trang chủ",
+            "download_pdf_label": "Tải PDF",
+            "github_label": "GitHub",
+            "site_label": "Harness Books",
+            "switcher_aria": "Chuyển đổi sách",
+            "further_reading_label": "Đọc thêm",
+            "prev_label": "Chương trước",
+            "next_label": "Chương sau",
+            "cta_title": "Cuốn sách này độc lập. AgentWay là một nền tảng thực hành riêng biệt.",
+            "cta_body_default": "Harness Books đã chứa toàn bộ nội dung công khai. Mục tiêu của nó là giải thích cấu trúc kiểm soát và đánh giá đằng sau thiết kế harness. AgentWay có liên quan, nhưng nó không phải là chương tiếp theo của cuốn sách này. Nếu bạn muốn áp dụng các phương pháp này trong đào tạo, thực hành và luyện tập liên tục, bạn có thể tìm hiểu thêm một cách riêng biệt.",
+            "cta_body_book2": "Cuốn sách so sánh này đã trình bày các điểm khác biệt chính giữa Claude Code và Codex. AgentWay có liên quan, nhưng không phải là chương tiếp theo của cuốn sách này. Nếu bạn muốn áp dụng những đánh giá này vào đào tạo, diễn tập và thực hành liên tục, bạn có thể tự mình tìm hiểu thêm.",
+            "cta_primary": "Khám phá AgentWay",
+            "cta_secondary": "Xem vị trí phù hợp",
+            "root_lang": "vi",
+            "root_title": "Harness Books",
+            "root_description": "Hai cuốn sách về Harness Engineering: một cuốn về kỷ luật runtime đằng sau Claude Code, và một cuốn so sánh triết lý harness của Claude Code và Codex.",
+            "hero_eyebrow": "Phân tích dựa trên mã nguồn của Claude Code và Codex",
+            "hero_title": "Bộ sách hai tập về kỹ nghệ harness cho agent lập trình",
+            "repo_button": "Xem kho lưu trữ GitHub",
+            "seo_what": "Kỹ nghệ Harness là gì",
+            "seo_what_body": "Kỹ nghệ Harness là về cấu trúc kiểm soát. Nó đặt câu hỏi làm thế nào control plane, query loop, quyền hạn (permissions), khôi phục (recovery), xác minh (verification), trạng thái (state) và quản trị cục bộ (local governance) hoạt động cùng nhau để giữ cho hệ thống agent có ranh giới và chịu trách nhiệm.",
+            "seo_learn": "Những gì bạn sẽ học",
+            "seo_learn_body": "Các cuốn sách này bao gồm runtime của Claude Code, so sánh Claude Code với Codex, kiến trúc coding agent, các đường dẫn khôi phục, kỷ luật xác minh, chính sách phê duyệt và quản trị ngữ cảnh.",
+            "seo_agentway": "AgentWay là gì",
+            "seo_agentway_body": "Harness Books là trang chủ công khai của hai cuốn sách này. AgentWay là một nền tảng thực hành liên quan nhưng độc lập, không phải là phần tiếp theo ẩn của trang web này.",
+            "footer_note": "Trang web này cung cấp đầy đủ văn bản công khai của cả hai cuốn sách. Trên máy tính để bàn, bạn có thể chuyển đổi giữa các sách trực tiếp trong trình đọc. Trên thiết bị di động, thanh điều hướng thích ứng với bố cục dọc thân thiện với cảm ứng.",
+            "read_online_label": "Đọc trực tuyến",
+            "toc_label": "Xem mục lục",
+            "book_cover_alt_suffix": "bìa",
+            "og_footer_home": "HARNESS BOOKS / TRANG CHỦ",
+            "og_footer_book": "HARNESS BOOKS / PHIÊN BẢN TIẾNG VIỆT",
         }
     return {
         "home_label": "首页",
@@ -124,6 +159,8 @@ def detect_locale_from_path(path: str) -> str:
     normalized = path.strip("/")
     if normalized == "en" or normalized.startswith("en/"):
         return "en"
+    if normalized == "vi" or normalized.startswith("vi/"):
+        return "vi"
     return "zh-Hans"
 
 
@@ -177,6 +214,7 @@ LOCALE_SWITCH_SCRIPT = f"""
       var value = String(languages[index] || "").toLowerCase();
       if (!value) continue;
       if (value.indexOf("zh") === 0) return "zh-Hans";
+      if (value.indexOf("vi") === 0) return "vi";
       if (value.indexOf("en") === 0) return "en";
     }}
     return "zh-Hans";
@@ -197,7 +235,12 @@ LOCALE_SWITCH_SCRIPT = f"""
     return;
   }}
 
-  var targetPrefix = preferredLocale === "en" ? "/en/" : "/";
+  var targetPrefix = "/";
+  if (preferredLocale === "en") {{
+    targetPrefix = "/en/";
+  }} else if (preferredLocale === "vi") {{
+    targetPrefix = "/vi/";
+  }}
   var currentPath = window.location.pathname || "/";
   if (currentPath !== "/" && currentPath !== "/index.html") return;
   window.location.replace(targetPrefix);
@@ -1152,6 +1195,20 @@ def load_book_metadata(book_dir: Path, locale: str) -> dict[str, str]:
                 "facts": ("Policy Layer", "State", "Local Rules"),
             },
         },
+        "vi": {
+            "book1-claude-code": {
+                "kicker": "Runtime Discipline",
+                "lede": "Đọc hiểu sâu cấu trúc runtime của Claude Code, tập trung vào control plane, tính liên tục, các đường dẫn khôi phục và phân chia công việc xác minh.",
+                "summary": "Tốt nhất cho những người đọc muốn có cái nhìn toàn cảnh trước tiên. Nó đặt câu hỏi tại sao một hệ thống agent lại phát triển các cơ quan như vòng lặp query loop, kiểm tra quyền hạn, quản trị ngữ cảnh và các quy tắc của nhóm. Nếu một hệ thống được thiết kế để duy trì sự ổn định, ai đó phải xử lý các kết thúc lộn xộn.",
+                "facts": ("Control Plane", "Query Loop", "Recovery"),
+            },
+            "book2-comparing": {
+                "kicker": "Comparative Harness",
+                "lede": "So sánh Claude Code và Codex thông qua control plane, trạng thái, chính sách và quản trị cục bộ.",
+                "summary": "Tốt nhất cho những người đọc đã biết các công cụ coding agent và muốn tìm hiểu trực tiếp sự phân chia kiến trúc và logic lựa chọn. Sự so sánh thực tế là nơi kiểm soát, kỷ luật trạng thái và các quy tắc tổ chức thực sự tồn tại.",
+                "facts": ("Policy Layer", "State", "Local Rules"),
+            },
+        },
     }
     extras = extras_by_locale.get(locale, {}).get(book_dir.name, {})
     prefix = locale_prefix(locale)
@@ -1442,7 +1499,7 @@ def build_agentway_cta(book: dict[str, str], locale: str) -> str:
     strings = locale_config(locale)
     title = strings["cta_title"]
     body = strings["cta_body_book2"] if book["slug"] == "book2-comparing" else strings["cta_body_default"]
-    agentway_base = "https://agentway.dev" if locale == "en" else "https://agentway.dev/zh"
+    agentway_base = "https://agentway.dev/zh" if locale == "zh-Hans" else "https://agentway.dev"
     pricing_url = f"{agentway_base}/pricing"
     return (
         '<aside class="hb-agentway-cta" aria-label="Further Reading">'
@@ -1842,8 +1899,8 @@ def make_index_html(books: list[dict[str, str]], repository_url: str, locale: st
         <h3>{escape(strings["seo_agentway"])}</h3>
         <p>{escape(strings["seo_agentway_body"])}</p>
         <div class="seo-block__actions">
-          <a class="button button--primary" href="{escape('https://agentway.dev' if locale == 'en' else 'https://agentway.dev/zh')}">{escape(strings["cta_primary"])}</a>
-          <a class="button button--secondary" href="{escape(('https://agentway.dev' if locale == 'en' else 'https://agentway.dev/zh') + '/pricing')}">{escape(strings["cta_secondary"])}</a>
+          <a class="button button--primary" href="{escape('https://agentway.dev/zh' if locale == 'zh-Hans' else 'https://agentway.dev')}">{escape(strings["cta_primary"])}</a>
+          <a class="button button--secondary" href="{escape(('https://agentway.dev/zh' if locale == 'zh-Hans' else 'https://agentway.dev') + '/pricing')}">{escape(strings["cta_secondary"])}</a>
         </div>
       </article>
     </section>
@@ -1873,7 +1930,15 @@ def write_root_files(
         root_og_relative,
         build_og_svg(
             eyebrow="Harness Books",
-            title="Harness Engineering 的两条阅读路径" if locale == "zh-Hans" else "Two Reading Paths into Harness Engineering",
+            title=(
+                "Harness Engineering 的两条阅读路径"
+                if locale == "zh-Hans"
+                else (
+                    "Hai con đường đọc về Kỹ nghệ Harness"
+                    if locale == "vi"
+                    else "Two Reading Paths into Harness Engineering"
+                )
+            ),
             subtitle="Claude Code / Codex / Control Plane / Recovery / Policy",
             footer=strings["og_footer_home"],
             accent_mode="split",

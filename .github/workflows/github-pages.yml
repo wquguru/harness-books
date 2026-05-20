@@ -54,18 +54,22 @@ jobs:
         run: |
           python3 tools/book-kit/build_honkit.py book1-claude-code
           python3 tools/book-kit/build_honkit.py book1-claude-code --locale en
+          python3 tools/book-kit/build_honkit.py book1-claude-code --locale vi
 
       - name: Build book2 website
         run: |
           python3 tools/book-kit/build_honkit.py book2-comparing
           python3 tools/book-kit/build_honkit.py book2-comparing --locale en
+          python3 tools/book-kit/build_honkit.py book2-comparing --locale vi
 
       - name: Build print HTML
         run: |
           python3 tools/book-kit/build_print_html.py book1-claude-code
           python3 tools/book-kit/build_print_html.py book1-claude-code --locale en
+          python3 tools/book-kit/build_print_html.py book1-claude-code --locale vi
           python3 tools/book-kit/build_print_html.py book2-comparing
           python3 tools/book-kit/build_print_html.py book2-comparing --locale en
+          python3 tools/book-kit/build_print_html.py book2-comparing --locale vi
 
       - name: Export PDFs
         env:
@@ -75,8 +79,10 @@ jobs:
         run: |
           python3 tools/book-kit/export_pdf.py book1-claude-code
           python3 tools/book-kit/export_pdf.py book1-claude-code --locale en
+          python3 tools/book-kit/export_pdf.py book1-claude-code --locale vi
           python3 tools/book-kit/export_pdf.py book2-comparing
           python3 tools/book-kit/export_pdf.py book2-comparing --locale en
+          python3 tools/book-kit/export_pdf.py book2-comparing --locale vi
 
       - name: Assemble unified Pages site
         env:
@@ -88,12 +94,17 @@ jobs:
         run: |
           test -f dist/index.html
           test -f dist/en/index.html
+          test -f dist/vi/index.html
           test -f dist/book1-claude-code/index.html
           test -f dist/en/book1-claude-code/index.html
+          test -f dist/vi/book1-claude-code/index.html
           test -f dist/book2-comparing/index.html
           test -f dist/en/book2-comparing/index.html
+          test -f dist/vi/book2-comparing/index.html
           test -f dist/en/book1-claude-code/exported/book1-claude-code-en.pdf
           test -f dist/en/book2-comparing/exported/book2-comparing-en.pdf
+          test -f dist/vi/book1-claude-code/exported/book1-claude-code-vi.pdf
+          test -f dist/vi/book2-comparing/exported/book2-comparing-vi.pdf
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
