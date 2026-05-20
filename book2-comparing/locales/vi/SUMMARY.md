@@ -1,0 +1,15 @@
+# Summary
+
+- [Giới thiệu và bản đồ đọc](index.md)
+- [Bản đồ Đọc sách: Cách đọc cùng lúc Tập Một và cuốn sách so sánh này](chapter-00-reading-map.md)
+- [Lời tựa: Hai khung kiểm soát, không phải một bộ phụ kiện](preface.md)
+- [Chương 1: Tại sao chúng ta so sánh Claude Code và Codex](chapter-01-why-this-comparison.md)
+- [Chương 2: Hai mặt phẳng điều khiển—các lớp prompt động so với các phân đoạn có cấu trúc](chapter-02-two-control-planes.md)
+- [Chương 3: Phiên làm việc và trạng thái—nhịp đập vòng lặp truy vấn so với luồng, triển khai và cầu nối](chapter-03-loop-thread-and-rollout.md)
+- [Chương 4: Công cụ, hộp cát và chính sách thực thi](chapter-04-tools-sandbox-and-exec-policy.md)
+- [Chương 5: Kỹ năng, hook và quản trị mang tính địa phương](chapter-05-skills-hooks-and-local-governance.md)
+- [Chương 6: Ủy quyền, xác minh và trạng thái bền vững](chapter-06-delegation-verification-and-state.md)
+- [Chương 7: Sự hội tụ và phân kỳ trong triết lý khung kiểm soát](chapter-07-convergence-and-divergence.md)
+- [Chương 8: Nếu bạn đang tự xây dựng khung kiểm soát, nên nghiên cứu điều gì trước tiên](chapter-08-how-to-choose-or-build.md)
+- [Phụ lục A: Bản đồ mã nguồn làm cơ sở cho bài so sánh](appendix-a-source-map.md)
+- [Phụ lục B: Bảng kiểm để xác định xem khung kiểm soát của bạn nằm ở đâu](appendix-b-checklists.md)

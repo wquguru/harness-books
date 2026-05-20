@@ -42,3 +42,11 @@ dist
 *.log
 *.out
 *.toc
+
+# Ensure translated locales are tracked
+!**/locales/vi/**
+
+# Honkit internal build directories
+_build/
+**/_build/
+

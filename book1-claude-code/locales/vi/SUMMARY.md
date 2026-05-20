@@ -1,0 +1,16 @@
+# Summary
+
+- [Giới thiệu](index.md)
+- [Lời nói đầu: Khung kiểm soát (Harness), Terminal và các Ràng buộc Kỹ thuật](preface.md)
+- [Chương 1 Tại sao Kỹ thuật Khung kiểm soát (Harness Engineering) lại quan trọng](chapter-01-why-harness-engineering.md)
+- [Chương 2 Prompt không phải là Tính cách, Prompt là Mặt phẳng Điều khiển (Control Plane)](chapter-02-prompt-is-control-plane.md)
+- [Chương 3 Vòng lặp Truy vấn (Query Loop): Nhịp đập của một Hệ thống Agent](chapter-03-query-loop-heartbeat.md)
+- [Chương 4 Công cụ, Quyền hạn và Ngắt (Tools, Permissions, and Interrupts): Tại sao Agent không thể chạm trực tiếp vào thế giới](chapter-04-tools-permissions-interrupts.md)
+- [Chương 5 Quản trị Ngữ cảnh (Context Governance): Bộ nhớ, CLAUDE.md và Rút gọn (Compact) như một Cơ chế Ngân sách](chapter-05-context-memory-compact.md)
+- [Chương 6 Lỗi và Khôi phục (Errors and Recovery): Một Hệ thống Agent tiếp tục hoạt động sau khi Thất bại](chapter-06-errors-and-recovery.md)
+- [Chương 7 Công việc Đa Agent và Xác minh (Multi-Agent Work and Verification): Quản lý sự Không ổn định thông qua Phân công Lao động](chapter-07-multi-agent-and-verification.md)
+- [Chương 8 Áp dụng trong Nhóm (Team Adoption): Biến một Công cụ Thông minh thành một Quy trình làm việc Bền vững](chapter-08-team-landing-practices.md)
+- [Chương 9 Mười Nguyên lý của Kỹ thuật Khung kiểm soát (Harness Engineering)](chapter-09-ten-principles.md)
+- [Phụ lục A Bảng kiểm (Checklists): Biến các Nguyên lý thành các Ràng buộc khả thi](appendix-a-checklists.md)
+- [Phụ lục B Sơ đồ: Vẽ Bộ khung Runtime](appendix-b-diagram-notes.md)
+- [Phụ lục C Bản đồ Nguồn (Source Map): Những File nào làm Cơ sở cho mỗi Chương](appendix-c-source-map.md)
